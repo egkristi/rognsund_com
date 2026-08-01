@@ -69,6 +69,32 @@ Skjemaet har allerede et skjult honningfelt som fanger de enkleste robotene.
 
 For lokal testing: legg hemmelighetene i `.dev.vars` (ligger i `.gitignore`).
 
+## Levende data
+
+Workeren henter åpne data på serversiden og bufrer dem, slik at nettleseren
+aldri snakker med tredjepart og CSP-en kan forbli `'self'`:
+
+| Endepunkt | Innhold | Kilde | Buffer |
+| --- | --- | --- | --- |
+| `/api/avganger` | Neste båtavganger og avvik | Entur (Snelandia) | 1 min |
+| `/api/vaer` | Værvarsel for sundet | Meteorologisk institutt | 30 min |
+| `/api/tidevann` | Flo og fjære | Kartverket | 6 t |
+| `/api/nordlys` | Kp-indeks nå og varsel | NOAA SWPC | 30 min |
+| `/api/nytt` | Saker som nevner området | NRK og Altaposten (RSS) | 30 min |
+| `/api/baater` | Fartøy i sundet (AIS) | Kystverket via BarentsWatch | 2 min |
+
+Alt virker uten oppsett, bortsett fra `/api/baater`, som trenger gratis
+API-tilgang fra [BarentsWatch](https://www.barentswatch.no/):
+
+```bash
+npx wrangler secret put BW_CLIENT_ID
+npx wrangler secret put BW_CLIENT_SECRET
+```
+
+Uten disse svarer endepunktet `{"konfigurert": false}`, og siden skjuler
+innholdet pent. Månefasen på natursiden regnes ut i nettleseren og trenger
+ingen kilde i det hele tatt — samme filosofi som lysdiagrammet.
+
 ---
 
 ## Slik er det satt sammen
@@ -87,10 +113,11 @@ public/                  alt som serveres som det er
   assets/css/rognsund.css    ett stilark, alle farger som variabler øverst
   assets/js/lysaret.js       regner ut og tegner lysåret
   assets/js/nettsted.js      meny, kalender, skjema
+  assets/js/sanntid.js       avganger, vær, tidevann, nordlys, måne, nytt, båter
   assets/fonts/              selvhostet, med lisenser
   _headers                   sikkerhetshoder og hurtigbufring
   _redirects                 gamle adresser
-src/index.js             worker: /api/kontakt, /api/helse, www-redirect
+src/index.js             worker: /api/kontakt, /api/helse, levende data, www-redirect
 wrangler.jsonc           Cloudflare-oppsett
 ```
 

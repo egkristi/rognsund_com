@@ -151,6 +151,33 @@ KONTAKT_TIL=deg@example.com
 
 ---
 
+## 5b. Levende data
+
+Workeren henter avganger (Entur/Snelandia), vær (MET), tidevann (Kartverket),
+nordlysvarsel (NOAA) og nyheter (RSS) på serversiden — se tabellen i
+`README.md`. Alt dette virker uten oppsett.
+
+**Båter i sundet (AIS)** trenger gratis API-tilgang fra BarentsWatch:
+
+1. Registrer deg på [barentswatch.no](https://www.barentswatch.no/) og opprett
+   en API-klient med tilgangen «AIS» (se «Application registration and
+   authentication» i dokumentasjonen deres).
+2. Legg inn hemmelighetene:
+
+```bash
+npx wrangler secret put BW_CLIENT_ID
+npx wrangler secret put BW_CLIENT_SECRET
+```
+
+Uten dem viser praktisk-siden «Posisjonsdata er ikke koblet til ennå» — alt
+annet virker som normalt. For lokal testing kan de også ligge i `.dev.vars`.
+
+Er en kilde nede, svarer endepunktet 502 og siden viser en rolig feilmelding
+med lenke til kilden. Ingenting av dette bufres, så det retter seg selv når
+kilden kommer tilbake.
+
+---
+
 ## 6. Automatisk publisering fra GitHub
 
 `.github/workflows/deploy.yml` publiserer ved hver push til `main`.

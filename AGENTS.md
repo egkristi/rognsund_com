@@ -35,9 +35,10 @@ public/                  serveres som det er
   assets/css/rognsund.css    ett stilark for hele nettstedet
   assets/js/lysaret.js       regner ut og tegner lysåret på forsiden
   assets/js/nettsted.js      meny, kalender, kontaktskjema
+  assets/js/sanntid.js       viser levende data fra /api/* + månefase (lokalt)
   assets/fonts/              selvhostet, med OFL-lisensene
   _headers, _redirects       sikkerhetshoder, bufring, gamle adresser
-src/index.js             worker: /api/kontakt, /api/helse, www→apex
+src/index.js             worker: /api/kontakt, /api/helse, levende data, www→apex
 wrangler.jsonc           Cloudflare-oppsett
 ```
 
@@ -75,6 +76,15 @@ dette eksplisitt på kontaktsida, og `Content-Security-Policy` i `public/_header
 håndhever det med `'self'`. Trenger du noe utenfra, selvhost det — og endrer du
 CSP-en, forklar hvorfor.
 
+Eksterne data hentes derfor **på serversiden**: workeren i `src/index.js`
+henter fra Entur, MET, Kartverket, NOAA, RSS og BarentsWatch, bufrer i
+Cloudflares cache og serverer som `/api/*` fra samme opphav. Nettleseren skal
+aldri kontakte kildene direkte. Nye datakilder skal følge samme mønster:
+legg dem i `DATAKILDER`-tabellen i workeren, med fornuftig `levetid`, og
+navngi kilden i svaret. `/api/baater` trenger hemmelighetene `BW_CLIENT_ID`
+og `BW_CLIENT_SECRET` og svarer `{"konfigurert": false}` uten dem — ikke
+hardkod nøkler.
+
 **Ikke dikt opp fakta om bygda.** Dette handler om et virkelig sted der virkelige
 folk bor. Rutetider, telefonnumre, navn på personer og bedrifter, innbyggertall
 og åpningstider skal ikke gjettes eller fylles ut med noe som «ser rimelig ut».
@@ -84,8 +94,10 @@ Mangler du opplysninger, legg inn en markør i stedet:
 <!-- FYLL INN: navn og telefonnummer til overnattingsstedene -->
 ```
 
-Rutetider skal aldri hardkodes. Lenk til Snelandia. Dette er et bevisst valg som
-står forklart på `praktisk.html` — ikke overstyr det.
+Rutetider skal aldri hardkodes. Lenk til Snelandia. Levende avganger fra Entur
+via `/api/avganger` er greit — de kan ikke bli foreldet — men faste klokkeslett
+i HTML eller JS er det ikke. Dette er et bevisst valg som står forklart på
+`praktisk.html` — ikke overstyr det.
 
 **Ikke lag falskt innhold i `arrangementer.json`.** Eksemplene som ligger der nå,
 er merket som eksempler i `_les_meg`-feltet og skal erstattes av bygda, ikke av
@@ -101,8 +113,8 @@ Alt du legger til, skal oppfylle det som allerede gjelder:
 - `prefers-color-scheme: dark` støttes via tokens — sjekk begge modusene
 - `alt`-tekst på alle bilder, `aria-label` på meningsbærende SVG
 - Semantisk HTML: én `<h1>` per side, overskriftsnivåene i rekkefølge
-- Sidene skal virke uten JavaScript, bortsett fra lysdiagrammet og kalenderen,
-  som begge har `<noscript>`-alternativ
+- Sidene skal virke uten JavaScript, bortsett fra lysdiagrammet, kalenderen
+  og sanntidsdataene — alle med `<noscript>`-alternativ som lenker til kilden
 
 ## Lysdiagrammet
 
@@ -138,6 +150,7 @@ console.log(d.hele ? "midnattssol" : globalThis.__t.klokke(d.fra));
 ```bash
 node --check public/assets/js/lysaret.js
 node --check public/assets/js/nettsted.js
+node --check public/assets/js/sanntid.js
 node --check src/index.js
 python3 -c "import json;json.load(open('public/data/arrangementer.json'))"
 python3 -c "import json;json.load(open('public/manifest.webmanifest'))"
@@ -156,6 +169,18 @@ curl -s -X POST localhost:8787/api/kontakt \
 
 Forventet: gyldig innsending gir 200, manglende felt gir 400 med hvilke felt som
 mangler, utfylt honningfelt (`nettsted`) gir 200 uten at noe sendes.
+
+Har du rørt datakildene, test dem også (de går mot ekte kilder, så det krever
+nett):
+
+```bash
+for e in avganger vaer tidevann nordlys nytt baater; do
+  echo "== $e"; curl -s "localhost:8787/api/$e" | head -c 300; echo
+done
+```
+
+Forventet: alle gir 200 med JSON. `/api/baater` gir `{"konfigurert": false}`
+uten BarentsWatch-hemmelighetene — det er riktig oppførsel, ikke en feil.
 
 ## Ikke gjør dette
 

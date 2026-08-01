@@ -22,6 +22,7 @@
 <link rel="preload" href="/assets/fonts/literata-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/css/rognsund.css">
 <script src="/assets/js/nettsted.js" defer></script>
+<script src="/assets/js/sanntid.js" defer></script>
 </head>
 <body>
 <a class="hopp-til-innhold" href="#innhold">Hopp til innholdet</a>
@@ -102,7 +103,9 @@
             Storekorsnes til Altneset sør på Seiland og til Kvalfjord på
             Stjernøya. Skyssbåten anløper også Pollen og Bia etter ruta.
             Overfarten fra Storekorsnes tar en snau halvtime, og fra Altneset
-            går det vei videre til Hakkstabben.
+            går det vei videre til Hakkstabben. Snelandia opplyser at
+            hurtigbåtanløp må bestilles på forhånd for at båten skal stoppe —
+            se <a href="https://www.snelandia.no/">snelandia.no</a>.
           </p>
         </div>
         <div class="kort">
@@ -135,6 +138,64 @@
 
   <section class="bolk">
     <div class="omslag">
+      <div class="bolk-topp">
+        <span class="merkelapp">Akkurat nå</span>
+        <h2>Sundet akkurat nå</h2>
+        <p>
+          Tallene under hentes fra kildene i det du åpner siden — via
+          rognsund.com, uten sporing. Er noe nede, bruk lenken hos kilden.
+        </p>
+      </div>
+      <div class="rutenett rutenett--to">
+        <div class="kort">
+          <h3>Neste avganger</h3>
+          <div data-avganger>
+            <p class="dempet">Henter avganger …</p>
+            <noscript>
+              <p>Avgangene vises med JavaScript. Rutetidene finner du hos
+              <a href="https://www.snelandia.no/">Snelandia</a>.</p>
+            </noscript>
+          </div>
+          <p class="kilde">Kilde: <a href="https://www.snelandia.no/">Snelandia</a> via Entur</p>
+        </div>
+        <div class="kort">
+          <h3>Været i sundet</h3>
+          <div data-vaer>
+            <p class="dempet">Henter værvarsel …</p>
+            <noscript>
+              <p>Værvarselet vises med JavaScript. Se
+              <a href="https://www.yr.no/">yr.no</a> for varselet.</p>
+            </noscript>
+          </div>
+          <p class="kilde">Kilde: <a href="https://www.met.no/">Meteorologisk institutt</a> (CC BY 4.0)</p>
+        </div>
+        <div class="kort">
+          <h3>Flo og fjære</h3>
+          <div data-tidevann>
+            <p class="dempet">Henter tidevann …</p>
+            <noscript>
+              <p>Tidevannet vises med JavaScript. Se
+              <a href="https://www.kartverket.no/til-sjos/se-havniva">Se havnivå</a> hos Kartverket.</p>
+            </noscript>
+          </div>
+          <p class="kilde">Kilde: <a href="https://www.kartverket.no/til-sjos/se-havniva">Kartverket</a> (CC BY 4.0)</p>
+        </div>
+        <div class="kort">
+          <h3>Båter i sundet</h3>
+          <div data-baater>
+            <p class="dempet">Ser etter fartøy …</p>
+            <noscript>
+              <p>Fartøyene vises med JavaScript.</p>
+            </noscript>
+          </div>
+          <p class="kilde">Kilde: Kystverket via <a href="https://www.barentswatch.no/">BarentsWatch</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bolk bolk--lys">
+    <div class="omslag">
       <div class="lesespalte">
         <h2>Godt å vite</h2>
         <h3>Overnatting og servering</h3>
@@ -153,7 +214,17 @@
         <h3>Mobil og nett</h3>
         <p>
           Dekningen er brukbar i bygda og upålitelig i fjellet. Har du planer om å
-          gå tur, ikke stol på telefonen som eneste sikkerhet.
+          gå tur, ikke stol på telefonen som eneste sikkerhet. Dekningskart og
+          driftsmeldinger finner du hos
+          <a href="https://www.telenor.no/dekning/">Telenor</a> og
+          <a href="https://www.telia.no/dekning/">Telia</a>.
+        </p>
+
+        <h3>Strøm</h3>
+        <p>
+          Nettselskapet i området er
+          <a href="https://www.altakraftlag.no/">Alta Kraftlag</a>. Ved
+          strømbrudd finner du driftsmeldinger på sidene deres.
         </p>
 
         <h3>Hvis noe skjer</h3>
@@ -167,9 +238,10 @@
 
         <div class="melding">
           <p>
-            <strong>Rutetider endrer seg.</strong> Vi legger bevisst ikke ut
-            faste klokkeslett her — de blir fort feil. Bruk Snelandia for tidene
-            som gjelder i dag.
+            <strong>Rutetider endrer seg.</strong> Vi skriver bevisst ikke inn
+            faste klokkeslett her — de blir fort feil. Avgangene lenger opp på
+            siden hentes direkte fra Entur og viser det som gjelder akkurat nå,
+            men sjekk likevel Snelandia før du drar.
           </p>
         </div>
       </div>

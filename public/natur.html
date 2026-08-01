@@ -22,6 +22,7 @@
 <link rel="preload" href="/assets/fonts/literata-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/css/rognsund.css">
 <script src="/assets/js/nettsted.js" defer></script>
+<script src="/assets/js/sanntid.js" defer></script>
 </head>
 <body>
 <a class="hopp-til-innhold" href="#innhold">Hopp til innholdet</a>
@@ -137,6 +138,21 @@
         <p>
           Nordlyssesongen strekker seg fra høst til vår. Da er mørket i seg selv
           en severdighet. <a href="/">Se lysåret dag for dag på forsiden</a>.
+        </p>
+
+        <h3>Nordlys i natt?</h3>
+        <div data-nordlys>
+          <p class="dempet">Henter nordlysvarsel …</p>
+          <noscript>
+            <p>Varselet vises med JavaScript. Kp-indeksen finner du hos
+            <a href="https://www.swpc.noaa.gov/products/planetary-k-index">NOAA</a>.</p>
+          </noscript>
+        </div>
+        <p class="kilde">Kilde: <a href="https://www.swpc.noaa.gov/">NOAA Space Weather Prediction Center</a></p>
+
+        <h3>Månen</h3>
+        <p data-maane>
+          <noscript>Månefasen regnes ut med JavaScript.</noscript>
         </p>
 
         <h2>Allemannsretten</h2>
