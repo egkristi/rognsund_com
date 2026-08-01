@@ -14,7 +14,7 @@ Er du her for å redigere tekst eller legge inn et arrangement, hopp til
 | --- | --- |
 | Node 20 eller nyere | `node -v`. Wrangler krever ikke mer enn dette. |
 | En Cloudflare-konto | Gratisplanen holder rikelig for dette nettstedet. |
-| Git | Repoet: `github.com/egkristi/rognsund_no` |
+| Git | Repoet: `github.com/egkristi/rognsund_com` |
 | Tilgang til domenet | Hos registraren der `rognsund.com` er kjøpt. |
 
 Nettstedet har ingen byggeprosess. Det er ferdige HTML-, CSS- og JS-filer i
@@ -26,8 +26,8 @@ hente wrangler.
 ## 2. Første gang
 
 ```bash
-git clone git@github.com:egkristi/rognsund_no.git
-cd rognsund_no
+git clone git@github.com:egkristi/rognsund_com.git
+cd rognsund_com
 npm install
 npx wrangler login          # åpner nettleseren, godkjenn tilgangen
 npm run dev                 # http://localhost:8787

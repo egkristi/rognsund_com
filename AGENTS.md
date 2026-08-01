@@ -10,7 +10,7 @@ Publisert med Cloudflare Workers med statiske filer. Målgruppa er folk som bor
 i bygda eller har røtter der, og besøkende som skal finne ut hvordan de kommer
 seg hit.
 
-**Repoet heter `rognsund_no`, men domenet er `rognsund.com`.** Ikke «rett» URL-er
+**Repoet heter `rognsund_com`, og domenet er `rognsund.com`.** Ikke «rett» URL-er
 til `.no` — det er ikke en feil.
 
 ## Kommandoer

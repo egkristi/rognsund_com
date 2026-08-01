@@ -2,7 +2,7 @@
   // Cloudflare Workers med statiske filer — rognsund.com
   // Dokumentasjon: https://developers.cloudflare.com/workers/static-assets/
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "rognsund",
+  "name": "rognsund-com",
   "main": "src/index.js",
   "compatibility_date": "2026-07-01",
 
