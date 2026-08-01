@@ -176,6 +176,27 @@ Er en kilde nede, svarer endepunktet 502 og siden viser en rolig feilmelding
 med lenke til kilden. Ingenting av dette bufres, så det retter seg selv når
 kilden kommer tilbake.
 
+### Kartet over sundet
+
+Kartet på praktisk-sida er en innebygd SVG i `praktisk.html` med tre lag som
+er hentet én gang og selvhostet (ingen kartfliser, ingen tredjepart):
+
+| Lag | Kilde | Lisens |
+| --- | --- | --- |
+| Kystlinje | OpenStreetMap via Overpass (`natural=coastline`), forenklet | ODbL |
+| Fyrlykter og sjømerker | Kystverkets WFS `nfs_sistop_ekstern_prod` (lagene `Lys` og `Fast_sjømerke`) | NLOD |
+| Kaier og steder | Enturs stoppestedsregister og OSM-stedsnavn | — |
+
+Kartutsnittet er 22,55–23,45 °Ø og 70,17–70,52 °N, viewBox 700 × 810 —
+samme tall står i `SUNDET` i `src/index.js` og `KART` i `sanntid.js`.
+Endrer du utsnittet, må alle tre oppdateres. Dataene endrer seg sjelden;
+skal de friskes opp, hent dem på nytt fra kildene over og regenerer
+punktene med samme projeksjon (lineær lengde/bredde til piksler).
+
+Farledene (hoved- og biled) lå nede hos Geonorge da kartet ble laget
+(`wfs.geonorge.no/skwms1/wfs.farled` ga 500) — de kan legges til som eget
+lag når tjenesten svarer igjen.
+
 ---
 
 ## 6. Automatisk publisering fra GitHub
