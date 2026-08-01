@@ -253,6 +253,39 @@
 
   /* --- Båter i sundet ---------------------------------------------------------- */
 
+  /* Samme utsnitt som SVG-kartet på praktisk-sida og filteret i workeren. */
+  var KART = { vest: 22.55, øst: 23.45, sør: 70.17, nord: 70.52, b: 700, h: 810 };
+  var SVGNS = "http://www.w3.org/2000/svg";
+
+  function tegnBaatkart(baater) {
+    var lag = document.querySelector("[data-baatkart]");
+    if (!lag) return;
+    while (lag.firstChild) lag.removeChild(lag.firstChild);
+    baater.forEach(function (b) {
+      var x = (b.lengde - KART.vest) / (KART.øst - KART.vest) * KART.b;
+      var y = (KART.nord - b.bredde) / (KART.nord - KART.sør) * KART.h;
+      if (x < 0 || x > KART.b || y < 0 || y > KART.h) return;
+      var prikk = document.createElementNS(SVGNS, "circle");
+      prikk.setAttribute("cx", x.toFixed(1));
+      prikk.setAttribute("cy", y.toFixed(1));
+      prikk.setAttribute("r", 5);
+      prikk.setAttribute("fill", "#d6006e");
+      var tittel = document.createElementNS(SVGNS, "title");
+      tittel.textContent = b.navn +
+        (typeof b.fart === "number" ? " · " + Math.round(b.fart) + " knop" : "");
+      prikk.appendChild(tittel);
+      lag.appendChild(prikk);
+      var navn = document.createElementNS(SVGNS, "text");
+      navn.setAttribute("x", (x + 8).toFixed(1));
+      navn.setAttribute("y", (y - 6).toFixed(1));
+      navn.setAttribute("fill", "#d6006e");
+      navn.setAttribute("font-family", "IBM Plex Mono, monospace");
+      navn.setAttribute("font-size", "12");
+      navn.textContent = b.navn;
+      lag.appendChild(navn);
+    });
+  }
+
   function visBaater(vert, data) {
     vert.innerHTML = "";
     if (!data.konfigurert) {
@@ -264,6 +297,7 @@
       vert.appendChild(p);
       return;
     }
+    tegnBaatkart(data.baater);
     if (!data.baater.length) {
       vert.appendChild(el("p", "dempet",
         "Ingen fartøy med AIS-sender i sundet akkurat nå."));

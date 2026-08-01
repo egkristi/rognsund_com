@@ -489,7 +489,8 @@ async function hentNytt() {
    Trenger BW_CLIENT_ID og BW_CLIENT_SECRET (gratis: barentswatch.no).
    Uten dem svarer endepunktet ærlig at det ikke er satt opp.             */
 
-const SUNDET = { sør: 70.25, nord: 70.55, vest: 22.6, øst: 23.5 };
+// Samme utsnitt som kartet på praktisk-sida.
+const SUNDET = { sør: 70.17, nord: 70.52, vest: 22.55, øst: 23.45 };
 
 async function hentBaater(env) {
   if (!env.BW_CLIENT_ID || !env.BW_CLIENT_SECRET) {

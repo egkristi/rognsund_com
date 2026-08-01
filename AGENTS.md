@@ -52,8 +52,9 @@ døp om det som finnes.
 
 **Farger kommer fra tokens.** Alle farger er CSS-variabler i `:root` øverst i
 `rognsund.css`. Ikke skriv heksadesimale verdier ute i reglene. To unntak, som
-er bevisste: SVG-en som tegnes i `lysaret.js`, og det innlagte kartet i
-`om-bygda.html` — SVG-attributter kan ikke arve `var()` på samme måte.
+er bevisste: SVG-en som tegnes i `lysaret.js`, og de innlagte kartene i
+`om-bygda.html` og `praktisk.html` (pluss båtprikkene `sanntid.js` tegner
+på det siste) — SVG-attributter kan ikke arve `var()` på samme måte.
 
 **Topp og bunn er duplisert i alle åtte HTML-filene.** Det er en villet
 avveining for at folk uten utviklerbakgrunn skal kunne redigere. Endrer du

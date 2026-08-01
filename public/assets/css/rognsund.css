@@ -705,6 +705,7 @@ textarea { min-height: 9rem; resize: vertical; }
 
 /* --- Kart --------------------------------------------------------------- */
 .kartfigur { margin: 0; }
+.kartfigur--staaende { max-width: 34rem; margin-top: var(--rom-6); }
 .kartfigur svg { border: 1px solid var(--kant); border-radius: var(--radius); background: #dfe9ee; }
 .kartfigur figcaption {
   font-family: var(--skrift-data);
