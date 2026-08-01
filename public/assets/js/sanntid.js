@@ -328,6 +328,17 @@
     if (vert) hent(del[1], del[2], vert);
   });
 
+  /* Sider som har kartet, men ikke båtlista, får likevel båtene tegnet inn. */
+  if (!document.querySelector("[data-baater]") &&
+      document.querySelector("[data-baatkart]")) {
+    fetch("/api/baater")
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (data) {
+        if (data && data.baater) tegnBaatkart(data.baater);
+      })
+      .catch(function () {});
+  }
+
   var maane = document.querySelector("[data-maane]");
   if (maane) visMaane(maane);
 })();
