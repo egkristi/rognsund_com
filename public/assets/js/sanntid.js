@@ -17,6 +17,13 @@
   var SONE = "Europe/Oslo";
   var UKEDAG = ["søndag", "mandag", "tirsdag", "onsdag", "torsdag", "fredag", "lørdag"];
 
+  /* Rutesider hos Havspor, med kart og sanntidsposisjon for båtene. */
+  var RUTELENKER = {
+    B310: "https://havspor.no/rute/altafjordxpressen",
+    B330: "https://havspor.no/rute/vargsundxpressen",
+    B340: "https://havspor.no/rute/skyssbaat-rognsund"
+  };
+
   /* --- Små hjelpere -------------------------------------------------------- */
 
   function hent(sti, vis, vert) {
@@ -107,13 +114,25 @@
       vert.appendChild(el("h4", "sanntid-kai", kai.navn));
       var ul = el("ul", "sanntidsliste");
       kai.avganger.slice(0, 3).forEach(function (a) {
-        var tekst = a.linje + " mot " + a.mot;
-        if (a.innstilt) tekst += " — innstilt";
+        var hale = " mot " + a.mot;
+        if (a.innstilt) hale += " — innstilt";
         else if (a.sanntid && a.ventet !== a.planlagt) {
-          tekst += " (rutetid " + klokke(a.planlagt) + ")";
+          hale += " (rutetid " + klokke(a.planlagt) + ")";
         }
-        rad(ul, tidMedDag(a.ventet || a.planlagt), tekst,
-            a.innstilt ? "innstilt" : null);
+        var li = el("li", a.innstilt ? "innstilt" : null);
+        li.appendChild(el("span", "tid", tidMedDag(a.ventet || a.planlagt)));
+        var tekst = el("span");
+        if (RUTELENKER[a.linje]) {
+          var lenke = el("a", null, a.linje);
+          lenke.href = RUTELENKER[a.linje];
+          lenke.title = "Rutekart og sanntid hos Havspor";
+          tekst.appendChild(lenke);
+          tekst.appendChild(document.createTextNode(hale));
+        } else {
+          tekst.textContent = a.linje + hale;
+        }
+        li.appendChild(tekst);
+        ul.appendChild(li);
       });
       vert.appendChild(ul);
     });
@@ -237,8 +256,12 @@
   function visBaater(vert, data) {
     vert.innerHTML = "";
     if (!data.konfigurert) {
-      vert.appendChild(el("p", "dempet",
-        "Posisjonsdata er ikke koblet til ennå."));
+      var p = el("p", "dempet", "Posisjonsdata er ikke koblet til ennå. ");
+      var lenke = el("a", null, "Følg båtene på kart hos Havspor");
+      lenke.href = RUTELENKER.B340;
+      p.appendChild(lenke);
+      p.appendChild(document.createTextNode("."));
+      vert.appendChild(p);
       return;
     }
     if (!data.baater.length) {
