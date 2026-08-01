@@ -67,6 +67,21 @@
     return klokke(iso) + (dag ? " " + dag : "");
   }
 
+  /* Full merking med ukedag og dato, så ingen avgang kan misforstås:
+     «i dag 2. aug. 15:55», «i morgen 3. aug. 07:40», «ons. 5. aug. 07:40». */
+  function avgangstid(iso) {
+    var d = new Date(iso);
+    var stubb = datoStubb(d);
+    var dato = d.toLocaleDateString("nb-NO", {
+      timeZone: SONE, day: "numeric", month: "short"
+    });
+    var dag;
+    if (stubb === datoStubb(new Date())) dag = "i dag";
+    else if (stubb === datoStubb(new Date(Date.now() + 86400000))) dag = "i morgen";
+    else dag = d.toLocaleDateString("nb-NO", { timeZone: SONE, weekday: "short" });
+    return dag + " " + dato + " " + klokke(iso);
+  }
+
   function himmelretning(grader) {
     var navn = ["N", "NØ", "Ø", "SØ", "S", "SV", "V", "NV"];
     return navn[Math.round(grader / 45) % 8];
@@ -120,7 +135,7 @@
           hale += " (rutetid " + klokke(a.planlagt) + ")";
         }
         var li = el("li", a.innstilt ? "innstilt" : null);
-        li.appendChild(el("span", "tid", tidMedDag(a.ventet || a.planlagt)));
+        li.appendChild(el("span", "tid", avgangstid(a.ventet || a.planlagt)));
         var tekst = el("span");
         if (RUTELENKER[a.linje]) {
           var lenke = el("a", null, a.linje);
