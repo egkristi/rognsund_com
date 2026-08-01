@@ -1,0 +1,21 @@
+# Avhengigheter
+node_modules/
+
+# Wrangler – lokal kjøretid, state og build-artefakter
+.wrangler/
+
+# Hemmeligheter – API-nøkler, kontonumre og annet som ikke skal sjekkes inn
+.dev.vars
+.env
+.env.local
+.env.*.local
+
+# Redaktør
+*.swp
+*.swo
+*~
+.vscode/
+
+# Operativsystem
+.DS_Store
+Thumbs.db
