@@ -1,0 +1,27 @@
+{
+  "_les_meg": "Legg inn arrangementer her. Datoformat: ÅÅÅÅ-MM-DD. Feltene tid, sted, arrangor og beskrivelse er valgfrie. Sorteres automatisk, og det som har vært vises nederst. Eksemplene under kan slettes.",
+  "arrangementer": [
+    {
+      "dato": "2026-09-12",
+      "tittel": "Dugnad på kaia",
+      "tid": "10:00",
+      "sted": "Altneset",
+      "arrangor": "Bygdelaget",
+      "beskrivelse": "Rydding og vedlikehold før høsten. Ta med hansker og godt humør. Kaffe og noe å bite i."
+    },
+    {
+      "dato": "2026-11-28",
+      "tittel": "Mørketidskveld i forsamlingshuset",
+      "tid": "18:00",
+      "sted": "Forsamlingshuset",
+      "beskrivelse": "Grøt, allsang og loddsalg når mørket har lagt seg over sundet."
+    },
+    {
+      "dato": "2026-12-27",
+      "tittel": "Juletrefest",
+      "tid": "16:00",
+      "sted": "Forsamlingshuset",
+      "beskrivelse": "Gang rundt juletreet for store og små."
+    }
+  ]
+}

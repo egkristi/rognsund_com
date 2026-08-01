@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kontakt — Rognsund</title>
+<meta name="description" content="Ta kontakt med dem som driver rognsund.com: send inn arrangementer, bilder, historier eller rettelser.">
+<link rel="canonical" href="https://rognsund.com/kontakt">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/img/ikon-180.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0b1d2a">
+<meta property="og:type" content="article">
+<meta property="og:locale" content="nb_NO">
+<meta property="og:site_name" content="Rognsund">
+<meta property="og:title" content="Kontakt Rognsund">
+<meta property="og:description" content="Ta kontakt med dem som driver rognsund.com: send inn arrangementer, bilder, historier eller rettelser.">
+<meta property="og:url" content="https://rognsund.com/kontakt">
+<meta property="og:image" content="https://rognsund.com/assets/img/delingsbilde.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preload" href="/assets/fonts/schibsted-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/literata-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/css/rognsund.css">
+<script src="/assets/js/nettsted.js" defer></script>
+</head>
+<body>
+<a class="hopp-til-innhold" href="#innhold">Hopp til innholdet</a>
+<header class="topp">
+  <div class="omslag topp-rad">
+    <a class="merke" href="/">
+      <svg class="merke-ikon" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <defs><clipPath id="rm"><circle cx="16" cy="16" r="14.4"/></clipPath></defs>
+        <g clip-path="url(#rm)">
+          <path d="M22.8 -6.7 L-3.2 33.3 L-6 33.3 L-6 -6.7 Z" fill="currentColor" opacity="0.92"/>
+          <path d="M31.2 -1.3 L5.2 38.7 L38 38.7 L38 -1.3 Z" fill="currentColor" opacity="0.92"/>
+          <line x1="27" y1="-4" x2="1" y2="36" stroke="#d6006e" stroke-width="1.7"/>
+        </g>
+        <circle cx="16" cy="16" r="14.4" stroke="currentColor" stroke-width="1.5" opacity="0.85"/>
+      </svg>
+      <span class="merke-navn">Rognsund</span>
+      <span class="merke-pos">70°23′N&nbsp;23°04′E</span>
+    </a>
+    <button class="meny-knapp" aria-expanded="false" aria-controls="hovedmeny">Meny</button>
+    <nav class="meny" id="hovedmeny" aria-label="Hovedmeny">
+      <a href="/om-bygda">Om bygda</a>
+      <a href="/historie">Historie</a>
+      <a href="/natur">Natur</a>
+      <a href="/praktisk">Praktisk</a>
+      <a href="/det-som-skjer">Det som skjer</a>
+      <a href="/kontakt" aria-current="page">Kontakt</a>
+    </nav>
+  </div>
+</header>
+
+<main id="innhold">
+
+  <section class="bolk bolk--tett">
+    <div class="omslag">
+      <div class="bolk-topp">
+        <span class="merkelapp">Kontakt</span>
+        <h1>Si fra</h1>
+        <p>
+          Har du et arrangement som skal på kalenderen, et bilde vi bør ha, en
+          historie fra bygda eller en feil vi bør rette? Skriv til oss.
+        </p>
+      </div>
+
+      <form class="skjema" id="kontaktskjema" novalidate>
+        <div class="felt">
+          <label for="navn">Navn</label>
+          <input type="text" id="navn" name="navn" autocomplete="name" required>
+        </div>
+        <div class="felt">
+          <label for="epost">E-post</label>
+          <span class="felt-hjelp">Så vi kan svare deg.</span>
+          <input type="email" id="epost" name="epost" autocomplete="email" required>
+        </div>
+        <div class="felt">
+          <label for="emne">Hva gjelder det?</label>
+          <select id="emne" name="emne">
+            <option value="arrangement">Et arrangement til kalenderen</option>
+            <option value="stoff">Bilder, historier eller lokalstoff</option>
+            <option value="rettelse">En feil som bør rettes</option>
+            <option value="annet">Noe annet</option>
+          </select>
+        </div>
+        <div class="felt">
+          <label for="melding">Melding</label>
+          <textarea id="melding" name="melding" required></textarea>
+        </div>
+        <div class="honning" aria-hidden="true">
+          <label for="nettsted">La dette feltet stå tomt</label>
+          <input type="text" id="nettsted" name="nettsted" tabindex="-1" autocomplete="off">
+        </div>
+        <button class="knapp" type="submit">Send melding</button>
+        <p class="melding skjult" id="skjemasvar" role="status" tabindex="-1"></p>
+      </form>
+
+      <noscript>
+        <div class="melding">
+          <p>
+            Skjemaet krever JavaScript. Send heller en e-post til adressen
+            nedenfor.
+          </p>
+        </div>
+      </noscript>
+    </div>
+  </section>
+
+  <section class="bolk bolk--lys">
+    <div class="omslag">
+      <div class="lesespalte">
+        <h2>Andre veier inn</h2>
+        <ul class="lenkeliste">
+          <li>
+            <a href="mailto:post@rognsund.com">
+              post@rognsund.com
+              <span class="hva">E-post til dem som driver sidene</span>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/egkristi/rognsund_no">
+              GitHub
+              <span class="hva">Foreslå endringer direkte i kildekoden</span>
+            </a>
+          </li>
+        </ul>
+        <!-- FYLL INN: legg til bygdelag, kontaktpersoner, Facebook-gruppe eller telefonnummer her -->
+
+        <h2>Personvern</h2>
+        <p>
+          Sidene bruker ingen sporing, ingen informasjonskapsler og ingen
+          tredjepartstjenester. Skrifttyper og bilder hentes fra samme server som
+          sidene selv. Sender du inn skjemaet, brukes opplysningene bare til å
+          svare deg.
+        </p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="bunn">
+  <div class="omslag">
+    <div class="bunn-rutenett">
+      <div>
+        <h3>Rognsund</h3>
+        <p>
+          Bygda i sundet mellom Seiland og Stjernøya, i Alta kommune i Finnmark.
+          Ingen vei hit — men båten går.
+        </p>
+      </div>
+      <div>
+        <h3>Sidene</h3>
+        <ul>
+          <li><a href="/om-bygda">Om bygda</a></li>
+          <li><a href="/historie">Historie</a></li>
+          <li><a href="/natur">Natur og friluftsliv</a></li>
+          <li><a href="/praktisk">Praktisk info</a></li>
+          <li><a href="/det-som-skjer">Det som skjer</a></li>
+          <li><a href="/kontakt">Kontakt</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Nyttige lenker</h3>
+        <ul>
+          <li><a href="https://www.snelandia.no/">Snelandia — buss og båt</a></li>
+          <li><a href="https://seilandnasjonalpark.no/">Seiland nasjonalpark</a></li>
+          <li><a href="https://www.alta.kommune.no/">Alta kommune</a></li>
+          <li><a href="https://www.yr.no/">Været på yr.no</a></li>
+          <li><a href="https://www.fefo.no/">FeFo — fiskekort og grunn</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Bidra</h3>
+        <p>
+          Sidene lages av folk med tilknytning til bygda. Rettelser og nytt stoff
+          er alltid velkomment.
+        </p>
+        <a class="knapp knapp--tom" href="/kontakt">Ta kontakt</a>
+      </div>
+    </div>
+    <div class="bunn-fin">
+      <span>© <span data-aar>2026</span> Rognsund</span>
+      <span>rognsund.com</span>
+      <span><a href="https://github.com/egkristi/rognsund_no">Kildekoden på GitHub</a></span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

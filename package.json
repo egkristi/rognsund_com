@@ -1,0 +1,15 @@
+{
+  "name": "rognsund-com",
+  "private": true,
+  "type": "module",
+  "description": "Nettstedet til bygda Rognsund i Alta kommune, Finnmark — rognsund.com",
+  "scripts": {
+    "start": "wrangler dev",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

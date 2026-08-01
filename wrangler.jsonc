@@ -1,0 +1,36 @@
+{
+  // Cloudflare Workers med statiske filer — rognsund.com
+  // Dokumentasjon: https://developers.cloudflare.com/workers/static-assets/
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "rognsund",
+  "main": "src/index.js",
+  "compatibility_date": "2026-07-01",
+
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  },
+
+  "observability": {
+    "enabled": true
+  },
+
+  // Slå på når rognsund.com er lagt inn som sone i Cloudflare-kontoen.
+  // Fram til da publiseres nettstedet på <navn>.<konto>.workers.dev.
+  // "routes": [
+  //   { "pattern": "rognsund.com", "custom_domain": true },
+  //   { "pattern": "www.rognsund.com", "custom_domain": true }
+  // ],
+
+  // Sett opp om du vil lagre skjemainnsendinger i KV i stedet for e-post:
+  //   npx wrangler kv namespace create KONTAKT
+  // "kv_namespaces": [
+  //   { "binding": "KONTAKT", "id": "sett-inn-id-her" }
+  // ],
+
+  "vars": {
+    "KONTAKT_FRA": "Rognsund <post@rognsund.com>"
+  }
+}
