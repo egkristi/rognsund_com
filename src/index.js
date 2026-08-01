@@ -235,20 +235,25 @@ const DATAKILDER = {
 };
 
 /* Svarer fra Cloudflares cache når mulig, ellers hentes kilden på nytt.
-   Feil bufres aldri. */
+   Feil bufres aldri. HEAD besvares som GET, bare uten kropp. */
 async function medBuffer(request, ctx, levetid, hent) {
-  if (request.method !== "GET") return svar(405, { melding: "Bruk GET." });
+  const erHead = request.method === "HEAD";
+  if (request.method !== "GET" && !erHead) {
+    return svar(405, { melding: "Bruk GET." });
+  }
+  const utenKropp = (r) => (erHead ? new Response(null, r) : r);
+
   const buffer = caches.default;
   const nøkkel = new Request(new URL(request.url).toString());
   const lagret = await buffer.match(nøkkel);
-  if (lagret) return lagret;
+  if (lagret) return utenKropp(lagret);
 
   let kropp;
   try {
     kropp = await hent();
   } catch (feil) {
     console.error("Datakilde feilet:", nøkkel.url, feil);
-    return svar(502, { melding: "Kilden svarte ikke akkurat nå. Prøv igjen om litt." });
+    return utenKropp(svar(502, { melding: "Kilden svarte ikke akkurat nå. Prøv igjen om litt." }));
   }
 
   const respons = new Response(JSON.stringify(kropp), {
@@ -258,7 +263,7 @@ async function medBuffer(request, ctx, levetid, hent) {
     },
   });
   ctx.waitUntil(buffer.put(nøkkel, respons.clone()));
-  return respons;
+  return utenKropp(respons);
 }
 
 async function hentJson(url, valg) {

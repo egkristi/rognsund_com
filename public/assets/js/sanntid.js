@@ -65,6 +65,10 @@
     return navn[Math.round(grader / 45) % 8];
   }
 
+  function tall(verdi) {
+    return String(verdi).replace(".", ",");
+  }
+
   function el(navn, klasse, tekst) {
     var n = document.createElement(navn);
     if (klasse) n.className = klasse;
@@ -136,7 +140,7 @@
       var t = timer[i];
       if (!t) return;
       var tekst = Math.round(t.temperatur) + " °C · " + Math.round(t.vind) + " m/s";
-      if (t.nedbør > 0) tekst += " · " + t.nedbør + " mm";
+      if (t.nedbør > 0) tekst += " · " + tall(t.nedbør) + " mm";
       rad(ul, tidMedDag(t.tid), tekst);
     });
     vert.appendChild(ul);
@@ -165,7 +169,7 @@
   function visNordlys(vert, data) {
     vert.innerHTML = "";
     if (data.naa) {
-      vert.appendChild(el("p", "sanntid-naa", "Kp " + data.naa.kp + " nå"));
+      vert.appendChild(el("p", "sanntid-naa", "Kp " + tall(data.naa.kp) + " nå"));
     }
     var maks = 0;
     (data.varsel || []).slice(0, 8).forEach(function (p) {
@@ -173,10 +177,10 @@
     });
     var tekst;
     if (maks >= 5) tekst = "Varselet melder sterk aktivitet (Kp opp mot " +
-      maks + ") det nærmeste døgnet.";
+      tall(maks) + ") det nærmeste døgnet.";
     else if (maks >= 3) tekst = "Varselet melder god aktivitet (Kp opp mot " +
-      maks + ") det nærmeste døgnet.";
-    else tekst = "Varselet melder rolige forhold (Kp opp mot " + maks +
+      tall(maks) + ") det nærmeste døgnet.";
+    else tekst = "Varselet melder rolige forhold (Kp opp mot " + tall(maks) +
       ") det nærmeste døgnet.";
     vert.appendChild(el("p", null, tekst + " Ved 70 grader nord kan nordlys " +
       "ses selv ved lav Kp — det som trengs, er mørk og klar himmel."));

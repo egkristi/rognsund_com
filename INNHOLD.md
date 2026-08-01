@@ -81,6 +81,13 @@ opp, så går sidene raskere.
 
 Spør alltid fotografen først, og folk som er med på bildet.
 
+## Tall som oppdaterer seg selv
+
+Avgangene, været, flo og fjære, nordlysvarselet og nyhetslista henter seg selv
+fra Snelandia/Entur, Meteorologisk institutt, Kartverket, NOAA og avisene.
+De skal **ikke** redigeres i filene — de er alltid ferske. Stemmer ikke en
+avgang, er det Snelandia som eier ruta; gi beskjed til dem.
+
 ## Endre menyen
 
 Menyen står i alle sju HTML-filene, likt hver gang. Endrer du den ett sted, må
