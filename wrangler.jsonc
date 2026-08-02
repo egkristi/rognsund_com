@@ -30,6 +30,19 @@
   //   { "binding": "KONTAKT", "id": "sett-inn-id-her" }
   // ],
 
+  // Båtloggen («innom sundet siste uka») trenger sitt eget KV-navnerom:
+  //   npx wrangler kv namespace create BAATLOGG
+  // Lim inn id-en under og legg til blokka i kv_namespaces over (eller
+  // som egen oppføring). Uten den svarer /api/baatlogg at loggen ikke er
+  // i gang, og cron-jobben gjør ingenting.
+  // { "binding": "BAATLOGG", "id": "sett-inn-id-her" }
+
+  // Hvert tiende minutt: logg hvilke fartøy som er i sundet (AIS).
+  // Ufarlig selv uten oppsett — jobben avslutter stille uten KV/nøkler.
+  "triggers": {
+    "crons": ["*/10 * * * *"]
+  },
+
   "vars": {
     "KONTAKT_FRA": "Rognsund <post@rognsund.no>"
   }

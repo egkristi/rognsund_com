@@ -172,6 +172,18 @@ npx wrangler secret put BW_CLIENT_SECRET
 Uten dem viser praktisk-siden «Posisjonsdata er ikke koblet til ennå» — alt
 annet virker som normalt. For lokal testing kan de også ligge i `.dev.vars`.
 
+**Båtloggen («innom sundet siste uka»)** trenger i tillegg lagringsplass:
+
+```bash
+npx wrangler kv namespace create BAATLOGG
+# lim inn id-en i wrangler.jsonc der kommentaren viser, og publiser på nytt
+```
+
+Cron-jobben (hvert tiende minutt, satt opp i `wrangler.jsonc`) logger da
+fartøyene i sundet, og lista fyller seg dag for dag. Det finnes ingen åpen
+kilde å hente ukeshistorikk fra i etterkant — Kystdatahusets historiske
+AIS-base ligger flere måneder på etterskudd — så loggen starter tom.
+
 Er en kilde nede, svarer endepunktet 502 og siden viser en rolig feilmelding
 med lenke til kilden. Ingenting av dette bufres, så det retter seg selv når
 kilden kommer tilbake.

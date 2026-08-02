@@ -17,11 +17,13 @@
  *   GET /api/tidevann   flo og fjære                    Kartverket
  *   GET /api/nordlys    Kp-indeks nå og varsel          NOAA SWPC
  *   GET /api/nytt       nyhetssaker som nevner bygda    NRK og Altaposten (RSS)
- *   GET /api/baater     fartøy i sundet (AIS)           Kystverket via BarentsWatch
+ *   GET /api/baater     fartøy i sundet nå (AIS)        Kystverket via BarentsWatch
+ *   GET /api/baatlogg   fartøy innom siste uka          egen logg (cron + KV)
  *
  * Alt bufres i Cloudflares cache, så kildene belastes lite. Endepunktene
  * virker uten oppsett, bortsett fra /api/baater som trenger hemmelighetene
- * BW_CLIENT_ID og BW_CLIENT_SECRET (gratis registrering hos BarentsWatch).
+ * BW_CLIENT_ID og BW_CLIENT_SECRET (gratis registrering hos BarentsWatch),
+ * og /api/baatlogg som i tillegg trenger KV-navnerommet BAATLOGG.
  *
  * Kontaktskjemaet fungerer uten oppsett (meldingen logges), men blir først
  * nyttig når du setter én av disse:
@@ -65,6 +67,29 @@ export default {
 
     // Alt annet er statiske filer
     return env.ASSETS.fetch(request);
+  },
+
+  /* Kjøres av cron-triggeren i wrangler.jsonc: logger hvilke fartøy som er
+     i sundet, slik at /api/baatlogg kan vise uka som gikk. Krever både
+     BarentsWatch-hemmelighetene og KV-navnerommet BAATLOGG. */
+  async scheduled(event, env, ctx) {
+    if (!env.BAATLOGG || !env.BW_CLIENT_ID || !env.BW_CLIENT_SECRET) return;
+    const baater = await hentAisPosisjoner(env);
+    if (!baater.length) return;
+
+    const nå = new Date().toISOString();
+    const nøkkel = "dag:" + nå.slice(0, 10);
+    const logg = JSON.parse((await env.BAATLOGG.get(nøkkel)) || "{}");
+    for (const b of baater) {
+      const fartøy = logg[b.mmsi] || { navn: b.navn, første: nå, observasjoner: 0 };
+      if (b.navn && b.navn !== "Ukjent fartøy") fartøy.navn = b.navn;
+      fartøy.siste = nå;
+      fartøy.observasjoner += 1;
+      logg[b.mmsi] = fartøy;
+    }
+    await env.BAATLOGG.put(nøkkel, JSON.stringify(logg), {
+      expirationTtl: 60 * 60 * 24 * 10,
+    });
   },
 };
 
@@ -232,6 +257,7 @@ const DATAKILDER = {
   "/api/nordlys": { levetid: 1800, hent: hentNordlys },
   "/api/nytt": { levetid: 1800, hent: hentNytt },
   "/api/baater": { levetid: 120, hent: hentBaater },
+  "/api/baatlogg": { levetid: 600, hent: hentBaatlogg },
 };
 
 /* Svarer fra Cloudflares cache når mulig, ellers hentes kilden på nytt.
@@ -496,7 +522,15 @@ async function hentBaater(env) {
   if (!env.BW_CLIENT_ID || !env.BW_CLIENT_SECRET) {
     return { konfigurert: false, baater: [] };
   }
+  return {
+    konfigurert: true,
+    hentet: new Date().toISOString(),
+    baater: await hentAisPosisjoner(env),
+    kilde: "Kystverket via BarentsWatch",
+  };
+}
 
+async function hentAisPosisjoner(env) {
   const token = await hentJson("https://id.barentswatch.no/connect/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -512,7 +546,7 @@ async function hentBaater(env) {
     headers: { Authorization: `Bearer ${token.access_token}` },
   });
 
-  const baater = (Array.isArray(alle) ? alle : [])
+  return (Array.isArray(alle) ? alle : [])
     .filter((b) =>
       typeof b.latitude === "number" && typeof b.longitude === "number" &&
       b.latitude >= SUNDET.sør && b.latitude <= SUNDET.nord &&
@@ -527,10 +561,43 @@ async function hentBaater(env) {
       lengde: b.longitude,
       tid: b.msgtime,
     }));
+}
+
+/* --- Båtloggen: hvem har vært innom sundet den siste uka ----------------
+   Fylles av scheduled-handleren øverst i fila, ti minutter om gangen.
+   Uten KV-navnerommet BAATLOGG svarer endepunktet at det ikke er i gang. */
+
+async function hentBaatlogg(env) {
+  if (!env.BAATLOGG || !env.BW_CLIENT_ID || !env.BW_CLIENT_SECRET) {
+    return { konfigurert: false, baater: [] };
+  }
+
+  const fartøyer = {};
+  const dager = [];
+  for (let i = 0; i < 7; i++) {
+    const dag = new Date(Date.now() - i * 86400000).toISOString().slice(0, 10);
+    dager.push(dag);
+    const logg = JSON.parse((await env.BAATLOGG.get("dag:" + dag)) || "{}");
+    for (const [mmsi, f] of Object.entries(logg)) {
+      const kjent = fartøyer[mmsi] || {
+        mmsi: Number(mmsi), navn: f.navn, dagerSett: 0, siste: f.siste, første: f.første,
+      };
+      kjent.dagerSett += 1;
+      if (f.siste > kjent.siste) { kjent.siste = f.siste; kjent.navn = f.navn; }
+      if (f.første < kjent.første) kjent.første = f.første;
+      fartøyer[mmsi] = kjent;
+    }
+  }
+
+  const baater = Object.values(fartøyer)
+    .sort((a, b) => (a.siste < b.siste ? 1 : -1))
+    .slice(0, 40);
 
   return {
     konfigurert: true,
     hentet: new Date().toISOString(),
+    fra: dager[dager.length - 1],
+    til: dager[0],
     baater,
     kilde: "Kystverket via BarentsWatch",
   };

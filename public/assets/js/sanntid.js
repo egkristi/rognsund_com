@@ -328,6 +328,38 @@
     vert.appendChild(ul);
   }
 
+  /* --- Båtloggen: innom sundet siste uka ----------------------------------------- */
+
+  function visBaatlogg(vert, data) {
+    vert.innerHTML = "";
+    if (!data.konfigurert) {
+      vert.appendChild(el("p", "dempet",
+        "Loggen er ikke i gang ennå. Den bygger seg opp dag for dag når " +
+        "AIS-tilgangen er koblet til."));
+      return;
+    }
+    if (!data.baater.length) {
+      vert.appendChild(el("p", "dempet",
+        "Ingen fartøy logget ennå. Loggen fylles dag for dag fra nå av."));
+      return;
+    }
+    var ul = el("ul", "sanntidsliste");
+    data.baater.forEach(function (b) {
+      var li = el("li");
+      var navn = el("span");
+      var lenke = el("a", null, b.navn);
+      lenke.href = "https://www.vesselfinder.com/vessels/details/" + b.mmsi;
+      lenke.title = "Fartøyoppslag på MMSI " + b.mmsi;
+      navn.appendChild(lenke);
+      li.appendChild(navn);
+      li.appendChild(el("span", "tid",
+        "sist " + avgangstid(b.siste) + " · " + b.dagerSett +
+        (b.dagerSett === 1 ? " dag" : " dager")));
+      ul.appendChild(li);
+    });
+    vert.appendChild(ul);
+  }
+
   /* --- Påmelding ---------------------------------------------------------------- */
 
   var deler = [
@@ -336,7 +368,8 @@
     ["[data-tidevann]", "/api/tidevann", visTidevann],
     ["[data-nordlys]", "/api/nordlys", visNordlys],
     ["[data-nytt]", "/api/nytt", visNytt],
-    ["[data-baater]", "/api/baater", visBaater]
+    ["[data-baater]", "/api/baater", visBaater],
+    ["[data-baatlogg]", "/api/baatlogg", visBaatlogg]
   ];
   deler.forEach(function (del) {
     var vert = document.querySelector(del[0]);

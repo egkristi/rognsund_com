@@ -82,6 +82,7 @@ aldri snakker med tredjepart og CSP-en kan forbli `'self'`:
 | `/api/nordlys` | Kp-indeks nå og varsel | NOAA SWPC | 30 min |
 | `/api/nytt` | Saker som nevner området | NRK og Altaposten (RSS) | 30 min |
 | `/api/baater` | Fartøy i sundet (AIS) | Kystverket via BarentsWatch | 2 min |
+| `/api/baatlogg` | Fartøy innom siste uka | Egen logg (cron hvert 10. min + KV) | 10 min |
 
 Alt virker uten oppsett, bortsett fra `/api/baater`, som trenger gratis
 API-tilgang fra [BarentsWatch](https://www.barentswatch.no/):
@@ -94,6 +95,17 @@ npx wrangler secret put BW_CLIENT_SECRET
 Uten disse svarer endepunktet `{"konfigurert": false}`, og siden skjuler
 innholdet pent. Månefasen på natursiden regnes ut i nettleseren og trenger
 ingen kilde i det hele tatt — samme filosofi som lysdiagrammet.
+
+Båtloggen («innom sundet siste uka») trenger i tillegg et KV-navnerom:
+
+```bash
+npx wrangler kv namespace create BAATLOGG
+# lim inn id-en i wrangler.jsonc (se kommentaren der)
+```
+
+Loggen bygges opp av cron-jobben fra den dagen alt er koblet til — det
+finnes ingen åpen kilde med ferdig ukeshistorikk for et område
+(Kystdatahusets historiske AIS-base ligger måneder på etterskudd).
 
 ---
 
