@@ -19,10 +19,10 @@
 
   // Slå på når rognsund.com er lagt inn som sone i Cloudflare-kontoen.
   // Fram til da publiseres nettstedet på <navn>.<konto>.workers.dev.
-  // "routes": [
-  //   { "pattern": "rognsund.com", "custom_domain": true },
-  //   { "pattern": "www.rognsund.com", "custom_domain": true }
-  // ],
+  "routes": [
+    { "pattern": "rognsund.com", "custom_domain": true },
+    { "pattern": "www.rognsund.com", "custom_domain": true }
+  ],
 
   // Sett opp om du vil lagre skjemainnsendinger i KV i stedet for e-post:
   //   npx wrangler kv namespace create KONTAKT

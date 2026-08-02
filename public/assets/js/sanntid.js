@@ -98,6 +98,15 @@
     return n;
   }
 
+  /* Eksterne lenker åpnes i ny fane, som ellers på nettstedet. */
+  function eksternLenke(adresse, tekst) {
+    var a = el("a", null, tekst);
+    a.href = adresse;
+    a.target = "_blank";
+    a.rel = "noopener";
+    return a;
+  }
+
   function liste(vert) {
     vert.innerHTML = "";
     var ul = el("ul", "sanntidsliste");
@@ -138,8 +147,7 @@
         li.appendChild(el("span", "tid", avgangstid(a.ventet || a.planlagt)));
         var tekst = el("span");
         if (RUTELENKER[a.linje]) {
-          var lenke = el("a", null, a.linje);
-          lenke.href = RUTELENKER[a.linje];
+          var lenke = eksternLenke(RUTELENKER[a.linje], a.linje);
           lenke.title = "Rutekart og sanntid hos Havspor";
           tekst.appendChild(lenke);
           tekst.appendChild(document.createTextNode(hale));
@@ -254,9 +262,7 @@
     var ul = el("ul", "sanntidsliste");
     data.saker.forEach(function (sak) {
       var li = el("li");
-      var a = el("a", null, sak.tittel);
-      a.href = sak.lenke;
-      li.appendChild(a);
+      li.appendChild(eksternLenke(sak.lenke, sak.tittel));
       var d = new Date(sak.dato);
       li.appendChild(el("span", "tid", sak.kilde +
         (isNaN(d) ? "" : " · " + d.toLocaleDateString("nb-NO",
@@ -305,9 +311,7 @@
     vert.innerHTML = "";
     if (!data.konfigurert) {
       var p = el("p", "dempet", "Posisjonsdata er ikke koblet til ennå. ");
-      var lenke = el("a", null, "Følg båtene på kart hos Havspor");
-      lenke.href = RUTELENKER.B340;
-      p.appendChild(lenke);
+      p.appendChild(eksternLenke(RUTELENKER.B340, "Følg båtene på kart hos Havspor"));
       p.appendChild(document.createTextNode("."));
       vert.appendChild(p);
       return;
@@ -347,8 +351,8 @@
     data.baater.forEach(function (b) {
       var li = el("li");
       var navn = el("span");
-      var lenke = el("a", null, b.navn);
-      lenke.href = "https://www.vesselfinder.com/vessels/details/" + b.mmsi;
+      var lenke = eksternLenke(
+        "https://www.vesselfinder.com/vessels/details/" + b.mmsi, b.navn);
       lenke.title = "Fartøyoppslag på MMSI " + b.mmsi;
       navn.appendChild(lenke);
       li.appendChild(navn);
