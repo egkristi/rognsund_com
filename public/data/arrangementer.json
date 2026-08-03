@@ -1,5 +1,5 @@
 {
-  "_les_meg": "Legg inn arrangementer her. Datoformat: ÅÅÅÅ-MM-DD. Feltene tid, sted, arrangor og beskrivelse er valgfrie. Sorteres automatisk. De to hendelsene under er bekreftet via nyhetsoppslag. Resten må fylles inn av folk som vet hva som skjer — ikke dikt opp.",
+  "_les_meg": "Legg inn arrangementer her. Datoformat: ÅÅÅÅ-MM-DD. Feltene tid, sted, arrangor og beskrivelse er valgfrie. Sorteres automatisk. De tre hendelsene under er bekreftet via nyhetsoppslag og kirkens offisielle kalender. Resten må fylles inn av folk som vet hva som skjer — ikke dikt opp.",
   "arrangementer": [
     {
       "dato": "2026-07-01",
@@ -7,6 +7,14 @@
       "beskrivelse": "Altaposten kårer årets sommerbilde fra Altafjorden. Premier: 8 000 kr til vinneren og 2 000 kr til én tilfeldig innsender. Send bilder til redaksjonen@altaposten.no.",
       "sted": "Hele Altafjorden",
       "arrangor": "Altaposten"
+    },
+    {
+      "dato": "2026-08-23",
+      "tittel": "Gudstjeneste med nattverd",
+      "beskrivelse": "Gudstjeneste i Rognsund kirke. Kirken ligger på Seiland, ca. 60 km nord for Alta sentrum. Hurtigbåt fra Storekorsnes (ordinær rute, sjekk Snelandia). Kirken har 120 sitteplasser. For informasjon om skyssbåt til gudstjenesten, se Alta og Talvik menigheter på Facebook.",
+      "tid": "11:00",
+      "sted": "Rognsund kirke",
+      "arrangor": "Alta og Talvik menigheter / Talvik sokn"
     },
     {
       "dato": "2025-11-07",
