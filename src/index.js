@@ -22,7 +22,7 @@
  *
  * Alt bufres i Cloudflares cache, så kildene belastes lite. Endepunktene
  * virker uten oppsett, bortsett fra /api/baater som trenger hemmelighetene
- * BW_CLIENT_ID og BW_CLIENT_SECRET (gratis registrering hos BarentsWatch),
+ * BW_AIS_CLIENT_ID og BW_AIS_CLIENT_SECRET (gratis registrering hos BarentsWatch),
  * og /api/baatlogg som i tillegg trenger KV-navnerommet BAATLOGG.
  *
  * Kontaktskjemaet fungerer uten oppsett (meldingen logges), men blir først
@@ -73,7 +73,7 @@ export default {
      i sundet, slik at /api/baatlogg kan vise uka som gikk. Krever både
      BarentsWatch-hemmelighetene og KV-navnerommet BAATLOGG. */
   async scheduled(event, env, ctx) {
-    if (!env.BAATLOGG || !env.BW_CLIENT_ID || !env.BW_CLIENT_SECRET) return;
+    if (!env.BAATLOGG || !env.BW_AIS_CLIENT_ID || !env.BW_AIS_CLIENT_SECRET) return;
     const baater = await hentAisPosisjoner(env);
     if (!baater.length) return;
 
@@ -512,14 +512,14 @@ async function hentNytt() {
 }
 
 /* --- Båter i sundet: AIS fra Kystverket via BarentsWatch ----------------
-   Trenger BW_CLIENT_ID og BW_CLIENT_SECRET (gratis: barentswatch.no).
+   Trenger BW_AIS_CLIENT_ID og BW_AIS_CLIENT_SECRET (gratis: barentswatch.no).
    Uten dem svarer endepunktet ærlig at det ikke er satt opp.             */
 
 // Samme utsnitt som kartet på praktisk-sida.
 const SUNDET = { sør: 70.17, nord: 70.52, vest: 22.55, øst: 23.45 };
 
 async function hentBaater(env) {
-  if (!env.BW_CLIENT_ID || !env.BW_CLIENT_SECRET) {
+  if (!env.BW_AIS_CLIENT_ID || !env.BW_AIS_CLIENT_SECRET) {
     return { konfigurert: false, baater: [] };
   }
   return {
@@ -535,8 +535,8 @@ async function hentAisPosisjoner(env) {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
-      client_id: env.BW_CLIENT_ID,
-      client_secret: env.BW_CLIENT_SECRET,
+      client_id: env.BW_AIS_CLIENT_ID,
+      client_secret: env.BW_AIS_CLIENT_SECRET,
       scope: "ais",
       grant_type: "client_credentials",
     }),
@@ -568,7 +568,7 @@ async function hentAisPosisjoner(env) {
    Uten KV-navnerommet BAATLOGG svarer endepunktet at det ikke er i gang. */
 
 async function hentBaatlogg(env) {
-  if (!env.BAATLOGG || !env.BW_CLIENT_ID || !env.BW_CLIENT_SECRET) {
+  if (!env.BAATLOGG || !env.BW_AIS_CLIENT_ID || !env.BW_AIS_CLIENT_SECRET) {
     return { konfigurert: false, baater: [] };
   }
 
