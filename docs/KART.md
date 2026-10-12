@@ -2,18 +2,31 @@
 
 Dette dokumentet svarer på om det er mulig og hensiktsmessig å lage en egen
 side `Kart` med mange lag (sjøkart, topo, eiendomsgrenser, BarentsWatch, AIS,
-stedsnavn og mer), og hvilken kartløsning som fungerer på Cloudflare
-Workers & Pages.
+stedsnavn og mer), om den kan vise det som finnes i
+[Kartkatalogen](https://kartkatalog.geonorge.no), og hvilken kartløsning som
+fungerer på Cloudflare Workers & Pages.
+
+Ingenting av dette er bygd ennå. Dokumentet er grunnlaget for beslutningen.
 
 ## Kort svar
 
-- **Mulig:** ja.
-- **Hensiktsmessig:** ja — nettstedet har allerede kartinnhold (innebygd SVG
-  på `praktisk.html` og `om-bygda.html`, pluss AIS-overlegg i `sanntid.js`).
-  En dedikert side samler dette og gir rom for flere lag.
-- **Viktigste forbehold:** CSP-en tillater bare `'self'` i dag. Kartsida er
-  et bevisst unntak: den laster fliser (raster/vektor) direkte fra eksterne
-  fliseservere (Kartverket/Geonorge). Se «Arkitekturen» under.
+- **Mulig:** ja. Et kartbibliotek er bare statiske JS- og CSS-filer. De kan
+  ligge i `public/assets/` og serveres av Workers uten byggesteg.
+- **Hensiktsmessig:** ja. Nettstedet har allerede kartinnhold (innebygd SVG
+  på `praktisk.html` og `om-bygda.html`, AIS-overlegg i `sanntid.js`, og
+  `/api/baater` med slepespor). En egen side samler dette og gir plass til
+  flere lag uten å gjøre de andre sidene tyngre.
+- **Bibliotek:** OpenLayers. Det støtter WMS, WMTS og WFS direkte, og det
+  støtter UTM-projeksjonene (EPSG:25833/25835) som mange norske tjenester
+  bruker. MapLibre GL JS er et godt alternativ hvis utseende og fart betyr
+  mer enn bredden i katalogen.
+- **Viktigste forbehold:** CSP-en tillater bare `'self'` i dag. Kartsida
+  krever enten at CSP-en åpnes for noen få kjente fliseverter, eller at
+  workeren mellomlagrer flisene. «All geodata fra Kartkatalogen» lar seg ikke
+  løse med en fast liste over verter. Det krever en avgrenset proxy i
+  workeren (se «Hele Kartkatalogen»).
+- **Ikke alt i katalogen er åpent.** En del datasett i Norge digitalt krever
+  innlogging eller avtale. Kartsida kan bare vise åpne tjenester.
 
 ## Arkitekturen — det som må avklares først
 
@@ -25,148 +38,296 @@ Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'
   frame-ancestors 'none'; base-uri 'self'
 ```
 
-Et interaktivt kart laster fliser (raster eller vektor) fra
-`cache.kartverket.no`/`opencache.statkart.no` eller Geonorge. Dette er en
-**bevisst, godkjent unntak** fra regelen om «ingenting fra tredjepart»: å
-selvhoste hele flisekatalogen er ikke praktisk, og flisene er åpne data
-(CC BY 4.0/NLOD). Det betyr at CSP-en må åpnes for fliser.
+Et interaktivt kart henter fliser (raster eller vektor) fra
+`cache.kartverket.no` og andre tjenester i Geonorge. Kartsida er derfor et
+**bevisst unntak** fra regelen om at ingenting lastes fra tredjepart (se
+AGENTS.md). Å selvhoste hele flisekatalogen er ikke praktisk, og flisene er
+åpne data (CC BY 4.0/NLOD).
 
 Tre måter ble vurdert:
 
-1. **Proxy via workeren.** Nytt endepunkt som henter fliser på serversiden og
-   serverer dem fra samme opphav. CSP forblir `'self'`, men gir ekstra kode og
-   Cloudflare-kvote.
-2. **Åpne CSP for flisevertene (valgt).** `img-src` og `connect-src` åpnes for
-   de konkrete flisevertene — ikke `*`. Enklest, og flisene er åpne data.
-3. **Hybrid.** Tungt grunnkart direkte, bare det som trenger egen behandling
-   via proxy.
+1. **Proxy via workeren.** Et nytt endepunkt, for eksempel `/fliser/...`,
+   henter fliser på serversiden og serverer dem fra samme opphav. CSP-en
+   forblir `'self'`, og nettleseren kontakter aldri kildene. Det koster mer
+   kode og bruker Workers-kvote (se under).
+2. **Åpne CSP-en for flisevertene (valgt for grunnkartene).** `img-src` åpnes
+   for de konkrete vertene, aldri `*`. Det er det enkleste, og flisene er åpne
+   data.
+3. **Hybrid.** Grunnkart direkte (2), og alt som ikke står på en fast liste
+   går via en avgrenset proxy (1).
 
-Beslutningen er **2**: fliser lastes direkte fra eksterne fliseservere, og
-CSP-en åpnes kun for de aktuelle vertene. All annen ressurslastning (skript,
-CSS, skrift, bilder) forblir `'self'`.
+Beslutningen er **2** for de faste grunnkartene. Hvis kartsida skal kunne
+vise vilkårlige lag fra Kartkatalogen, må den utvides til **3**. Se «Hele
+Kartkatalogen».
+
+Detaljer som er lette å overse:
+
+- **Rasterfliser** (WMTS, WMS) lastes som bilder og trenger bare `img-src`.
+- **Vektorfliser, WFS, GeoJSON og GetCapabilities** hentes med `fetch` og
+  trenger `connect-src`. Kildene må også sende CORS-hoder. Mange norske WMS-
+  og WFS-tjenester gjør ikke det. Da er proxy via workeren eneste løsning.
+- **OpenLayers med `crossOrigin: 'anonymous'`** (nødvendig for å lese
+  pikselverdier, skrive ut eller eksportere kartet) krever også CORS fra
+  flisekilden.
+- **MapLibre GL JS** bruker en Web Worker. Er biblioteket selvhostet, holder
+  det med `worker-src 'self'`. Lastes det fra et annet opphav, kreves
+  `worker-src blob:`. MapLibre v6 leveres bare som ES-modul (ingen UMD og
+  ingen egen CSP-bygging lenger). Det passer dårlig med ES5-stilen i
+  nettleserfilene, men kan lastes med `<script type="module">` uten bundler.
+- **Kartverket-innbygging (iframe)** stoppes av `default-src 'self'` fordi
+  `frame-src` ikke er satt. `frame-ancestors` styrer hvem som kan ramme inn
+  *oss*, ikke hva vi kan ramme inn.
 
 ## Biblioteker — vurdering
 
-| Bibliotek | Lisens | WMS/WMTS/WFS (Geonorge) | Vektortiles | Vurdering |
-| --- | --- | --- | --- | --- |
-| **OpenLayers** | BSD-2 | Nativ støtte for alle tre | Ja | **Best for «all geodata».** Geonorge er i hovedsak WMS/WMTS/WFS. |
-| **MapLibre GL JS** | BSD-3 | WMS/WMTS som raster; WFS via worker | Ja, førsteklasses | **Best ytelse og rendering.** Det Kartverkets Norgeskart bygger på. |
-| **Leaflet** | BSD-2 | WMS via plugin | Via plugin | Lett (~42 kB), men for tynt for lagtung katalog. |
-| **CesiumJS** | Apache-2.0 | Nei | Ja (3D) | **Uegnet.** 3D-globus, 1–2 MB+, overkill for lokalt 2D-kart. |
+| Bibliotek | Lisens | WMS/WMTS/WFS | UTM (EPSG:25833/35) | Vektorfliser | Størrelse (min., ca.) | Vurdering |
+| --- | --- | --- | --- | --- | --- | --- |
+| **OpenLayers** | BSD-2 | Alle tre innebygd, også GetCapabilities-tolking | Ja, med proj4 | Ja (MVT) | ~1 MB / ~250 kB gzip | **Best for «all geodata».** Geonorge leverer i hovedsak WMS/WMTS/WFS, ofte i UTM. |
+| **MapLibre GL JS** | BSD-3 | WMS/WMTS bare som raster i Web Mercator; WFS må hentes og gjøres om til GeoJSON selv | Nei, bare Web Mercator | Førsteklasses, WebGL | ~800 kB / ~230 kB gzip | **Best utseende og fart.** Svakere mot WMS-tunge kataloger og UTM-tjenester. |
+| **Leaflet** | BSD-2 | WMS innebygd; WMTS og WFS via utvidelser | Via Proj4Leaflet | Via utvidelser | ~150 kB / ~42 kB gzip | Lett og enkelt. Blir et lappeteppe av utvidelser når lagene blir mange. |
+| **CesiumJS** | Apache-2.0 | WMS og WMTS innebygd (bildekilder) | Begrenset | 3D Tiles | flere MB | **Uegnet her.** 3D-globus. Standardoppsettet bruker Cesium ion (token, tredjepart), så det må skrus av. |
 
-**Anbefaling:** OpenLayers om målet er bredest mulig dekning av
-Geonorge-katalogen; MapLibre GL JS om målet er best utseende og fart med
-Kartverkets vektor-/Norgeskart-stil. Begge er BSD-lisensert og kompatible med
-prosjektets MIT-lisens.
+Merknader:
 
-Alle er tredjepartskode og må **selvhostes** (lastes ned og legges i
-`public/assets/js/`) for å overholde «ingen CDN». Ingen av dem trenger
-byggeprosess — de finnes som ferdige minifiserte filer.
+- **Projeksjon betyr noe på 70 °N.** Web Mercator strekker kartet omtrent
+  tre ganger i høyden og bredden på denne breddegraden. Det går bra visuelt,
+  men mange Geonorge-tjenester leveres best, eller bare, i EPSG:25833
+  (UTM 33) eller EPSG:25835 (UTM 35, som dekker Finnmark). OpenLayers kan
+  vise kartet i UTM. MapLibre kan ikke det.
+- **Kartverket leverer WMTS i både Web Mercator og UTM.** Lag- og
+  flisematrisenavn har endret seg (se «Kjente fallgruver»). Les dem fra
+  GetCapabilities i stedet for å hardkode dem fra gamle eksempler.
+- **Alle bibliotekene må selvhostes** i `public/assets/js/` for å overholde
+  «ingen CDN». OpenLayers kommer også som en ferdig samlet fil som setter
+  `ol` globalt. Den passer ES5-stilen, men sjekk at fila fortsatt følger med
+  i versjonen dere velger.
+- Alle fire er åpen kildekode under tillatende lisenser og forenlige med
+  prosjektet.
 
 ## Andre alternativer
 
-- **Kartverket-embed** — offisiell innbygging uten egen kode. Lavest innsats,
-  men liten kontroll og en iframe som bryter dagens CSP (`frame-ancestors`).
-- **TerriaMap / TerriaJS** — rammeverk for katalogdrevne kartportaler (brukt i
-  offentlige geodataportaler). Riktig konsept for «mange lag med lagvelger»,
-  men overkill for dette nettstedet.
-- **Statisk WMS-bilde** — ett `GetMap`-bilde per visning. Null interaktivitet,
-  men trivielt og CSP-vennlig.
-- **deck.gl** — for storskala datavisualisering, ikke grunnkart.
-- **Google Maps / Mapbox / TomTom** — utelukket: kommersielle SDK-er, sporing,
-  strider mot prosjektets prinsipper.
+| Alternativ | Hva det er | Vurdering |
+| --- | --- | --- |
+| **Protomaps / PMTiles** | Én fil med vektorfliser lagt i Cloudflare R2 og servert av workeren | **Svært godt egnet for Cloudflare.** Gjør det mulig å selvhoste et eget grunnkart (OSM eller Kartverket N50) for området, så CSP-en kan bli `'self'`. Brukes med MapLibre eller OpenLayers. |
+| **Origo** | Rammeverk på OpenLayers der lagene styres av én JSON-konfigurasjon (laget av svenske kommuner) | Samme idé som lagregisteret under, men ferdig bygd. Krever byggesteg ved tilpasning, så bruk det heller som forbilde. |
+| **Kartverkets Norgeskart** (åpen kildekode) | Kartverkets egen kartklient | Nyttig å se på for lagoppsett og URL-er. Ikke laget for innbygging. |
+| **Masterportal, MapStore, TerriaJS** | Komplette geoportaler med katalogsøk | Riktig konsept for «mange lag med lagvelger», men alt for tunge for et bygdenettsted, og de trenger byggesteg. |
+| **Kartverket-innbygging / lenke til norgeskart.no** | Iframe eller lenke med koordinater | Lenke koster ingenting og er greit som tillegg. Iframe krever åpning av `frame-src`. |
+| **Statisk WMS-bilde** | Ett `GetMap`-bilde per visning, gjerne via workeren | Null interaktivitet, men trivielt og CSP-vennlig. Kan være `<noscript>`-alternativet. |
+| **deck.gl** | Visualisering av store datamengder oppå et grunnkart | Ikke behov for det her. |
+| **Google Maps, Mapbox GL JS (v2+), ArcGIS JS, TomTom** | Kommersielle SDK-er | **Utelukket.** Nøkler, sporing og proprietære lisenser strider mot prosjektets prinsipper. |
 
 ## Cloudflare Workers & Pages
 
-- Dette prosjektet kjører som **Workers med statiske filer** (ikke Pages).
-  Statiske filer i `public/` serveres som de er — derfor kan et selvhostet
-  kartbibliotek legges der uten videre.
-- **Tile-proxy** er et velkjent Workers-mønster: `fetch()` mot
-  `cache.kartverket.no` og `ctx.waitUntil(caches.default.put(...))`. Cache-hit
-  på kanten er billig, og kilden belastes lite — samme mønster som `/api/*`
-  allerede bruker.
-- **Kvote å være klar over (gratisplan):** 100 000 forespørsler/døgn og 10 ms
-  CPU per kall. Et kartvisning laster typisk 20–50 fliser. Med cache- og
-  `Cache-Control`-oppsett holder det fint for et lavtrafikk-nettsted, men en
-  aggressiv `immutable`-bufring på fliser er fornuftig (fliser endrer seg ikke).
-- Fliser er små (typisk 10–50 kB), godt under Workers' 100 MB-responsgrense.
+- Prosjektet kjører som **Workers med statiske filer** (ikke Pages).
+  Statiske filer i `public/` serveres som de er, og forespørsler etter dem er
+  gratis og ubegrenset. Et selvhostet kartbibliotek koster derfor ingenting
+  ekstra.
+- **Fliseproxy** er et kjent Workers-mønster: `fetch()` mot kilden og
+  `ctx.waitUntil(caches.default.put(...))`. Det er det samme mønsteret som
+  `medBuffer` allerede bruker for `/api/*`. Treff i cachen på kanten er
+  billige, og kilden belastes lite.
+- **Kvote på gratisplanen:** 100 000 workerkall per døgn og 10 ms CPU per
+  kall. Statiske filer teller ikke. En kartvisning henter typisk 20–50
+  fliser, og panorering henter mange flere. Går flisene via workeren, kan
+  rundt 2 000–5 000 kartvisninger i døgnet bruke opp kvoten. Henter
+  nettleseren flisene direkte (strategi 2), teller de ikke i det hele tatt.
+  Det taler for strategi 2 for grunnkartene.
+- **R2** (objektlager) passer for PMTiles og for egne datasett, som
+  stedsnavn, stier og kulturminner digitalisert av bygda. Gratisnivået er
+  10 GB lagring, og trafikk ut er gratis.
+- **KV** brukes allerede til båtloggen og kan lagre forhåndsberegnede
+  GeoJSON-utdrag (for eksempel stedsnavn i utsnittet), slik at de ikke må
+  hentes fra kilden ved hvert kall.
+- Fliser er små (10–50 kB), langt under grensene for responsstørrelse.
 
-## Kartlag og Geonorge-katalogen
+## Kartlag — hva som finnes
 
-Kartkatalogen på `kartkatalog.geonorge.no` dekker hele spekteret av norske
-geodata. De fleste leveres som WMS/WMTS/WFS. Relevante lag for Rognsund:
+Kartutsnittet som allerede brukes i `src/index.js` (`SUNDET`) og
+`sanntid.js` (`KART`), er 22,55–23,45 °Ø / 70,17–70,52 °N. Gjenbruk det på
+kartsida.
 
-| Lag | Tjeneste | Åpenhet |
+### Grunnkart
+
+| Lag | Kilde og tjeneste | Åpenhet |
 | --- | --- | --- |
-| Sjøkart (raster/vektor) | Kartverket WMTS/WMS | Åpent, CC BY 4.0/NLOD — krediter «Kartverket» |
-| Topografisk norgeskart | Kartverket WMTS (`cache.kartverket.no/v1/wmts/.../topo/...`) | Åpent, CC BY 4.0 |
-| Stedsnavn (Sentralt stedsnavnregister, SSR) | WFS | Åpent, NLOD |
-| Terreng/høyde | Kartverket WMS/WCS | Åpent |
-| Eiendomsgrenser (Matrikkelen) | WMS | **Begrenset** — krever Geovekst-/kommunal avtale |
-| AIS / fartøy | BarentsWatch (allerede på serversiden) | Krever `BW_AIS_CLIENT_ID`/`SECRET` |
-| Bølgevarsel, FishInfo | BarentsWatch (scope `api`) | Krever `BW_CLIENT_ID`/`SECRET` |
-| Fyrlykter/sjømerker | Kystverkets WFS (allerede tegnet inn statisk) | NLOD |
+| Topografisk norgeskart (farge og gråtone) | Kartverket WMTS, `cache.kartverket.no` | CC BY 4.0 — krediter «Kartverket» |
+| Sjøkart (raster) | Kartverket WMTS, samme vert | CC BY 4.0. Ikke til navigasjon |
+| Flyfoto / ortofoto | Norge i bilder (WMTS) | **Sjekk vilkår.** Deler er åpne, men ikke alt |
+| Terrengskygge / høydekurver | Kartverket WMS (DTM, høydekurver) | Åpent |
+| OpenStreetMap | Egne PMTiles i R2 (ikke tile.openstreetmap.org, som ikke er ment for slik bruk) | ODbL |
 
-**Viktig:** Eiendomsgrenser er ikke fritt åpent. Ikke lov det som et gratis
-lag uten at tilgangsavtale foreligger.
+### Overlegg fra Geonorge og etatene
 
-Kartutsnittet som allerede brukes i `src/index.js` (`SUNDET`) og `sanntid.js`
-(`KART`) er 22,55–23,45 °Ø / 70,17–70,52 °N — gjenbruk det på kartsida.
+| Lag | Kilde | Åpenhet | Relevans for Rognsund |
+| --- | --- | --- | --- |
+| Stedsnavn (SSR) | Kartverket: stedsnavn-API (REST/JSON), WMS og WFS | NLOD / CC BY 4.0 | Høy. Lokale navn, også samiske og kvenske skrivemåter |
+| Eiendomsgrenser (Matrikkelkart / Eiendomskart Teig) | Kartverket WMS (`openwms.statkart.no`) og WFS (`wfs.geonorge.no`) | **Åpent, CC BY 4.0.** Eier (hjemmelshaver) er *ikke* med og skal ikke vises | Middels. Oppdateres daglig, så endringer kan ta noen dager |
+| Adresser og bygningspunkt | Matrikkelkart WMS / adresse-API | Åpent | Middels |
+| Fyr, sjømerker, farleder, havner | Kystverket WMS/WFS (Kystinfo) | NLOD | Høy. I dag tegnet statisk i SVG |
+| Verneområder (Seiland nasjonalpark m.m.) | Miljødirektoratet, Naturbase WMS | Åpent | Høy |
+| Kulturminner | Riksantikvaren (Askeladden/Kulturminnesøk) WMS | Åpent, men lokalisering av sårbare minner kan være skjult | Høy (se historie.html) |
+| Akvakulturlokaliteter | Fiskeridirektoratet WMS | Åpent | Middels |
+| Fiskeri: redskap, felt, gyteområder | BarentsWatch FiskInfo / Fiskeridirektoratet | Åpent / scope `api` | Middels |
+| Skredfare, kvikkleire, flomsoner | NVE WMS | Åpent | Middels |
+| Berggrunn og løsmasser | NGU WMS | Åpent | Lav–middels (Stjernøya) |
+| Artsobservasjoner | Artsdatabanken WMS | Åpent | Lav–middels |
+| Dybdedata | Kartverket WMS (dybdedata/terrengmodell sjø) | Delvis åpent | Middels |
+| Turstier og friluftsruter | Kartverket WMS / WFS (Turrutebasen) | Åpent | Høy |
+
+Alle URL-er, lagnavn og vilkår må kontrolleres i Kartkatalogen før laget
+legges inn. Tabellen sier hva som finnes, ikke de endelige adressene.
+
+### Levende data (via workeren, samme opphav)
+
+| Lag | Endepunkt | Krav |
+| --- | --- | --- |
+| AIS: fartøy med skipstype og slepespor | `/api/baater` (finnes) | `BW_AIS_CLIENT_ID` / `BW_AIS_CLIENT_SECRET` |
+| Fartøy innom sundet siste uka | `/api/baatlogg` (finnes) | AIS-nøklene + KV `BAATLOGG` |
+| Skyssbåtens posisjon og avganger | `/api/avganger` (Entur) | — |
+| Bølgevarsel | BarentsWatch Waveforecast (ny) | `BW_CLIENT_ID` / `BW_CLIENT_SECRET` |
+| Vær i punkt (klikk i kartet) | MET Locationforecast (som `/api/vaer`) | — |
+| Vannstand | Kartverket (som `/api/tidevann`) | — |
+
+**Fartøy i kartet:** klikk på en båt for navn, type, fart, kurs og tid for
+siste posisjon, og en lenke ut for mer. Gode mål for lenka er BarentsWatch'
+eget AIS-kart og Kystverkets Kystinfo. Unngå kommersielle sporingstjenester
+som eneste lenke. En utgående lenke er ikke et brudd på CSP-en eller på
+personvernløftet, fordi ingenting lastes før brukeren klikker. Vurder å
+skjule fritidsbåter under en viss lengde. AIS er offentlig, men det å vise
+hvor naboens båt ligger, er et valg bygda bør ta.
+
+## Hele Kartkatalogen
+
+Kartkatalogen har et åpent søke-API (`kartkatalog.geonorge.no/api/search`)
+som returnerer datasett med tjeneste-URL-er (WMS/WMTS/WFS). Det gjør det
+mulig å lage en «Legg til lag fra Kartkatalogen»-funksjon:
+
+1. Brukeren søker. Workeren spør katalog-API-et og returnerer treff.
+2. Brukeren velger et lag. Workeren henter GetCapabilities fra tjenesten og
+   gir kartet lagene som kan vises.
+3. Kartet viser laget. WMS- og WMTS-bilder kan hentes direkte hvis verten
+   står i CSP-en, ellers via `/fliser?kilde=...`-proxyen.
+
+Forutsetninger og begrensninger:
+
+- **CSP-en kan ikke være åpen for alle verter**, og katalogen peker på mange
+  ulike (Kartverket, NGU, NVE, Miljødirektoratet, Fiskeridirektoratet,
+  Kystverket, kommuner). Proxyen må ha en **tillatelsesliste** over verter,
+  ellers blir den en åpen proxy som andre kan misbruke.
+- **Bare åpne tjenester.** Datasett med tilgangsbegrensning i Norge digitalt
+  krever pålogging (BAAT/token) og skal ikke eksponeres gjennom workeren.
+- **Proxy-trafikk teller i Workers-kvoten.** Sett en lang `Cache-Control` på
+  fliser og en kortere på GetCapabilities.
+- **Projeksjoner varierer.** En del tjenester tilbyr ikke Web Mercator. Det
+  er hovedgrunnen til å velge OpenLayers.
+
+Anbefalingen er å vente med denne funksjonen. Start med et kuratert
+lagregister. Et fritt katalogsøk gir mye tekniske støy for folk i bygda,
+mens 10–15 velvalgte lag dekker det de fleste trenger.
+
+## Kjente fallgruver
+
+- **`opencache.statkart.no` er erstattet av `cache.kartverket.no`.** Kartverket
+  har slått sammen WMTS-tjenestene (topo farge, topo gråtone, toporaster og
+  sjøkart raster) under én vert. Gamle lagnavn som `topo4` gjelder ikke
+  lenger. Bruk GetCapabilities:
+  `https://cache.kartverket.no/v1/wmts/1.0.0/WMTSCapabilities.xml`.
+  Følg varslene i [Geonorge-registeret](https://register.geonorge.no/varsler).
+- **Kreditering er et lisenskrav** (CC BY 4.0): «© Kartverket» og eventuelle
+  andre kilder skal synes i kartet hele tiden, ikke bare i bunnteksten.
+- **Ikke til navigasjon.** Sjøkartlaget skal ha samme forbehold som SVG-kartet
+  på `praktisk.html`.
+- **Mørk modus:** rasterfliser har faste farger. Gråtonekartet fungerer
+  bedre i mørk modus. Kontroller, tegnforklaring og popup-er skal bruke
+  tokens fra `rognsund.css`.
+- **Tilgjengelighet:** et interaktivt kart er vanskelig med skjermleser. Gi
+  lagvelgeren vanlige avkrysningsbokser, la kartet få fokus med synlig
+  markering, og legg AIS-tabellen ved siden av (som i dag), ikke bare i
+  kartet.
+- **Uten JavaScript:** `<noscript>` med det eksisterende SVG-kartet, eller
+  et statisk WMS-bilde, og lenke til norgeskart.no.
 
 ## Beslutning og anbefaling
 
-Basert på prioriteringene **fremtidig utvidbarhet, gratis og brukervennlig**
-er anbefalingen:
+Basert på prioriteringene **fremtidig utvidbarhet, gratis og brukervennlig**:
 
-> **OpenLayers + fliser direkte fra Kartverket/Geonorge, med et
-> konfigurasjonsdrevet lagregister.**
+> **OpenLayers, selvhostet. Grunnkart direkte fra `cache.kartverket.no`,
+> og et lagregister i én konfigurasjonsliste. Proxy via workeren bare for lag
+> som mangler CORS, eller når katalogsøk legges til.**
 
-- **Bibliotek:** OpenLayers (BSD-2, gratis). Støtter WMS/WMTS/WFS nativt,
-  som er nettopp det Geonorge-katalogen leverer. Fremtidig utvidbarhet
-  vinner over MapLibre GL JS' glatthet, fordi nye Geonorge-lag kan legges til
-  uten ny kode.
-- **Strategi:** fliser lastes direkte fra eksterne fliseservere (strategi 2).
-  CSP-en åpnes kun for flisevertene; alt annet forblir `'self'`.
-- **Brukervennlighet:** løses i UI-et (enkel lagvelger med av/på, zoom,
-  «finn meg»), ikke i biblioteket.
+- **Bibliotek:** OpenLayers (BSD-2). Det støtter WMS/WMTS/WFS og UTM, og det
+  er det Geonorge-katalogen leverer. Utvidbarhet veier tyngre enn
+  glattheten i MapLibre.
+- **Fliser:** strategi 2 for grunnkartene. CSP-en åpnes i `img-src` bare for
+  `cache.kartverket.no` (og de få andre faste vertene i registeret).
+  Skript, CSS og skrift forblir `'self'`.
+- **Levende data:** som i dag, via `/api/*` fra samme opphav, levert som
+  GeoJSON slik at kartet kan bruke dem direkte.
+- **Brukervennlighet:** løses i grensesnittet med en enkel lagvelger,
+  zoom, «vis hele sundet» og klikk for informasjon. Det ligger ikke i
+  biblioteket.
 
-### Konfigurasjonsdrevet lagregister
+### Lagregister i én liste
 
-Kjernen i fremtidig utvidbarhet: alle lag deklareres i én liste. Et nytt lag
-fra kartkatalogen = én ny oppføring, ingen endring i kartlogikken.
+Kjernen i utvidbarheten er at alle lag deklareres i én liste. Et nytt lag fra
+Kartkatalogen krever én ny oppføring og ingen endring i kartlogikken.
 
 ```js
 var LAG = [
-  { navn: "Sjøkart",   type: "wmts",  url: "…",  lag: "…",  paa: true },
-  { navn: "Topo",      type: "wmts",  url: "…",  lag: "…",  paa: true },
-  { navn: "Stedsnavn", type: "wfs",   url: "…",  typenavn: "…" },
-  { navn: "AIS",       type: "geojson", url: "/api/baater" },
-  { navn: "Eiendom",   type: "wms",   url: "…",  lag: "…" } // krever avtale
+  { navn: "Topografisk kart", type: "wmts", url: "…", lag: "…", grunnkart: true, paa: true },
+  { navn: "Sjøkart",          type: "wmts", url: "…", lag: "…", grunnkart: true },
+  { navn: "Stedsnavn",        type: "wms",  url: "…", lag: "…" },
+  { navn: "Eiendomsgrenser",  type: "wms",  url: "…", lag: "…", minZoom: 13 },
+  { navn: "Fartøy (AIS)",     type: "geojson", url: "/api/baater", oppdater: 120 },
+  { navn: "Nasjonalpark",     type: "wms",  url: "…", lag: "…" }
 ];
 ```
 
-Støttede typer i registeret: `wmts`, `wms`, `wfs` og `geojson`. AIS og
-BarentsWatch-data kommer som `geojson`/`json` fra egne `/api/*`-endepunkter —
-samme opphav, ingen CSP-endring.
+Hver oppføring bør også ha `kilde` og `lisens` (vist i krediteringen) og
+eventuelt `proxy: true` for verter uten CORS eller utenfor CSP-en. Støttede
+typer: `wmts`, `wms`, `wfs` og `geojson`.
 
-### Foreslått første versjon (MVP)
+### Første versjon (MVP)
 
 | Lag | Tjeneste | Åpenhet |
 | --- | --- | --- |
-| Sjøkart | Kartverket WMTS | CC BY 4.0 — krediter «Kartverket» |
-| Topografisk norgeskart | Kartverket WMTS | CC BY 4.0 |
-| Stedsnavn (SSR) | WFS | NLOD |
-| AIS (fartøy + slepespor) | egen `/api/baater` | krever `BW_AIS_CLIENT_ID`/`SECRET` |
+| Topografisk norgeskart (farge/gråtone) | Kartverket WMTS | CC BY 4.0 |
+| Sjøkart | Kartverket WMTS | CC BY 4.0 — ikke til navigasjon |
+| Stedsnavn | Kartverket WMS | CC BY 4.0 |
+| Eiendomsgrenser | Matrikkelkart WMS | CC BY 4.0 — vis bare ved høy zoom |
+| Fyr og sjømerker | Kystverket WMS | NLOD |
+| AIS (fartøy + slepespor + lenke ut) | `/api/baater` | AIS-nøklene |
 
-Eiendomsgrenser og bølgevarsel står klare som neste utvidelse når behovet
-oppstår (henholdsvis avtale og `BW_CLIENT_ID`/`SECRET`).
+Neste utvidelser: verneområder, kulturminner, turstier, bølgevarsel
+(`BW_CLIENT_ID`/`SECRET`), og til slutt katalogsøk med proxy.
 
 ## Neste steg
 
-1. Selvhost OpenLayers i `public/assets/js/` (minifisert fil, ingen CDN).
-2. Legg til `/kart`-side (HTML + CSS + JS) og menypunkt i alle åtte filene,
-   med `aria-current="page"` på den nye lenka.
-3. Åpne `img-src` og `connect-src` i `public/_headers` for de konkrete
-   flisevertene (Kartverket/Geonorge) — ikke `*` — og forklar hvorfor.
-4. Lagregisteret over som enkel, utvidbar liste i kart-JS-en.
-5. Krediter kildene synlig (Kartverket, NLOD-lag).
+1. Selvhost OpenLayers (og proj4 for UTM) i `public/assets/js/`. Legg ved
+   lisensfilene, som for skriftene.
+2. Lag `kart.html` og `assets/js/kart.js`, og legg menypunktet «Kart» inn i
+   alle HTML-filene med `aria-current="page"` på riktig side.
+3. Åpne `img-src` (og `connect-src` om nødvendig) i `public/_headers` bare
+   for de konkrete vertene. Skriv begrunnelsen i en kommentar i fila.
+   Vurder å gi `/kart` sin egen CSP-blokk, slik at resten av nettstedet
+   beholder `'self'`.
+4. Gjør om `/api/baater` (eller lag en variant) til GeoJSON med
+   slepespor som `LineString`.
+5. Les lagnavn fra GetCapabilities og legg dem inn i registeret.
+6. Synlig kreditering, «ikke til navigasjon» og `<noscript>`-alternativ.
+7. Test i 360 px bredde, mørk modus og med tastatur.
+
+## Kilder
+
+- Kartverket, WMTS-varsel og ny adresse:
+  [register.geonorge.no — Topografisk norgeskart WMTS/cache](https://register.geonorge.no/varsler/topografisk-norgeskart-wmts-cache/63a7a1b9-e9c0-49d8-ac58-4657d66e8123)
+- Matrikkelkart WMS (CC BY 4.0):
+  [Geonorge metadata](https://geonorge.no/geonetworktest/srv/api/records/30dda4c6-2cba-4378-b2e7-26f644df9d99)
+- Matrikkelen Eiendomskart Teig:
+  [data.norge.no](https://data.norge.no/en/datasets/50393160-7ad9-31cc-89b5-f1318dd64ca4/matrikkelen-eiendomskart-teig-historiske-data-2025)
+- MapLibre v6 og CSP:
+  [v5 → v6 migreringsguide](https://maplibre.org/maplibre-gl-js/docs/guides/v5-to-v6-migration-guide/)
+- [OpenLayers](https://openlayers.org) · [MapLibre](https://maplibre.org) ·
+  [Leaflet](https://leafletjs.com) · [CesiumJS](https://cesium.com/platform/cesiumjs/) ·
+  [Protomaps/PMTiles](https://protomaps.com) · [Kartkatalogen](https://kartkatalog.geonorge.no)
