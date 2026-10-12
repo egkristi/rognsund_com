@@ -43,7 +43,13 @@
     "crons": ["*/10 * * * *"]
   },
 
+  // VIKTIG: Klient-ID-ene må stå her og ikke bare i Cloudflare-dashbordet —
+  // dashboard-satte variabler overskrives ved hver «wrangler deploy».
+  // Selve klienthemmelighetene (BW_CLIENT_SECRET, BW_AIS_CLIENT_SECRET)
+  // ligger fortsatt som Cloudflare-secrets og hører ikke hjemme her.
   "vars": {
-    "KONTAKT_FRA": "Rognsund <post@rognsund.no>"
+    "KONTAKT_FRA": "Rognsund <post@rognsund.no>",
+    "BW_CLIENT_ID": "egkristi@gmail.com:rognsund",
+    "BW_AIS_CLIENT_ID": "egkristi@gmail.com:rognsund_ais"
   }
 }
