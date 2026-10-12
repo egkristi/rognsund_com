@@ -5,8 +5,8 @@ rognsund.com, og hvordan tilgangen er satt opp.
 
 ## Navnekonvensjon
 
-Alle BarentsWatch-hemmeligheter legges i Cloudflare som **`BW_CLIENT_ID`** og
-**`BW_CLIENT_SECRET`** — uavhengig av hvilken BarentsWatch-klient som er i bruk.
+- **AIS** → `BW_AIS_CLIENT_ID` / `BW_AIS_CLIENT_SECRET`
+- **BarentsWatch API (generelt, scope `api`)** → `BW_CLIENT_ID` / `BW_CLIENT_SECRET`
 
 ## To klienttyper
 
@@ -14,16 +14,10 @@ BarentsWatch har to separate API-klienter med ulik scope. Du trenger én klient
 per type, begge opprettes under [barentswatch.no/minside](https://www.barentswatch.no/minside)
 → «Utviklertilganger»:
 
-| Klient | Scope | Innhold |
-| --- | --- | --- |
-| **AIS API** | `ais` | Sanntids fartøyposisjoner (Kystverket) |
-| **BarentsWatch API** | `api` | Fiskehelse, AkvaInfo, FiskInfo, bølgevarsel, polare lavtrykk m.m. |
-
-Merk: én klient kan ikke ha begge scopes — trenger du begge, må du ha to
-klienter. `BW_CLIENT_ID`/`BW_CLIENT_SECRET` peker på den klienten som er i bruk
-(i dag: AIS-klienten). Skal vi senere ta i bruk «BarentsWatch API» (scope
-`api`), må vi opprette en andre klient og legge den under et eget navnepar
-(f.eks. `BW_API_CLIENT_ID`/`BW_API_CLIENT_SECRET`).
+| Klient | Scope | Cloudflare-navn | Innhold |
+| --- | --- | --- | --- |
+| **AIS API** | `ais` | `BW_AIS_CLIENT_ID` / `BW_AIS_CLIENT_SECRET` | Sanntids fartøyposisjoner (Kystverket) |
+| **BarentsWatch API** | `api` | `BW_CLIENT_ID` / `BW_CLIENT_SECRET` | Fiskehelse, AkvaInfo, FiskInfo, bølgevarsel, polare lavtrykk m.m. |
 
 ## AIS API — i bruk
 
@@ -32,8 +26,16 @@ Viser fartøy i sundet:
 - `GET /api/baater` — fartøy i sundet nå (`https://live.ais.barentswatch.no/v1/latest/combined`)
 - `GET /api/baatlogg` — fartøy innom siste uka (cron hvert 10. min + KV-navnerommet `BAATLOGG`)
 
-Cloudflare-hemmeligheter: `BW_CLIENT_ID`, `BW_CLIENT_SECRET`.
+Cloudflare-hemmeligheter: `BW_AIS_CLIENT_ID`, `BW_AIS_CLIENT_SECRET`.
 Autentisering: OAuth2 client credentials mot `https://id.barentswatch.no/connect/token` med `scope=ais`.
+
+### Mulige utvidelser (AIS)
+
+- **Ikoner per fartøystype**: AIS-dataene inneholder skipstype (kode 0–99,
+  dokumentert i aisshiptype). Kan mappes til ulike ikoner i kart og tabell.
+- **Slepespor (historikk)**: historiske posisjoner finnes via Historic AIS API
+  (`https://historic.ais.barentswatch.no/v1/historic/trackslast24hours/{mmsi}`),
+  eller ved å logge posisjoner selv (cron + KV).
 
 ## BarentsWatch API (scope `api`) — mulige bruksområder
 
