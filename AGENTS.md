@@ -11,7 +11,8 @@ i bygda eller har røtter der, og besøkende som skal finne ut hvordan de kommer
 seg hit.
 
 **Repoet heter `rognsund_com`, og domenet er `rognsund.com`.** Ikke «rett» URL-er
-til `.no` — det er ikke en feil.
+til `.no` — det er ikke en feil. Merk likevel at e-postadressa til nettstedet er
+`post@rognsund.no` — den er bevisst `.no` og skal ikke endres til `.com`.
 
 ## Kommandoer
 
@@ -77,14 +78,23 @@ dette eksplisitt på kontaktsida, og `Content-Security-Policy` i `public/_header
 håndhever det med `'self'`. Trenger du noe utenfra, selvhost det — og endrer du
 CSP-en, forklar hvorfor.
 
+**Én bevisst unntak — kartfliser.** Kartsida kan laste raster- og vektorfliser
+direkte fra Kartverkets fliseservere (`cache.kartverket.no`,
+`opencache.statkart.no`) og Geonorge. Å selvhoste hele flisekatalogen er ikke
+praktisk, og flisene er åpne data (CC BY 4.0/NLOD). Åpner du CSP-en for dette,
+skal den åpnes bare for de konkrete flisevertene — aldri `img-src *` eller
+`connect-src *` — og begrunnelsen skal stå i `_headers` og `docs/KART.md`. Alt
+annet (skript, CSS, skrift, bilder) forblir `'self'`.
+
 Eksterne data hentes derfor **på serversiden**: workeren i `src/index.js`
 henter fra Entur, MET, Kartverket, NOAA, RSS og BarentsWatch, bufrer i
 Cloudflares cache og serverer som `/api/*` fra samme opphav. Nettleseren skal
 aldri kontakte kildene direkte. Nye datakilder skal følge samme mønster:
 legg dem i `DATAKILDER`-tabellen i workeren, med fornuftig `levetid`, og
-navngi kilden i svaret. `/api/baater` trenger hemmelighetene `BW_CLIENT_ID`
-og `BW_CLIENT_SECRET` og svarer `{"konfigurert": false}` uten dem — ikke
-hardkod nøkler.
+navngi kilden i svaret. `/api/baater` og `/api/baatlogg` trenger AIS-klienten
+`BW_AIS_CLIENT_ID` og `BW_AIS_CLIENT_SECRET` (se `docs/BARENTSWATCH.md`), og
+`/api/baatlogg` trenger i tillegg KV-navnerommet `BAATLOGG`. Uten dem svarer
+endepunktene `{"konfigurert": false}` — ikke hardkod nøkler.
 
 **Ikke dikt opp fakta om bygda.** Dette handler om et virkelig sted der virkelige
 folk bor. Rutetider, telefonnumre, navn på personer og bedrifter, innbyggertall
@@ -100,9 +110,11 @@ via `/api/avganger` er greit — de kan ikke bli foreldet — men faste klokkesl
 i HTML eller JS er det ikke. Dette er et bevisst valg som står forklart på
 `praktisk.html` — ikke overstyr det.
 
-**Ikke lag falskt innhold i `arrangementer.json`.** Eksemplene som ligger der nå,
-er merket som eksempler i `_les_meg`-feltet og skal erstattes av bygda, ikke av
-en agent.
+**Ikke lag falskt innhold i `arrangementer.json`.** Innholdet skal være reelle,
+bekreftede hendelser — hentet fra nyhetsoppslag, kirkens kalender eller lignende
+kilder — ikke oppdiktet av en agent. Kildegrunnlaget for det som allerede ligger
+der, står i `_les_meg`-feltet. Er du usikker på om noe er korrekt, la det stå og
+marker med en `<!-- FYLL INN -->`-kommentar i stedet.
 
 ## Kvalitetsgulv
 
@@ -175,13 +187,14 @@ Har du rørt datakildene, test dem også (de går mot ekte kilder, så det kreve
 nett):
 
 ```bash
-for e in avganger vaer tidevann nordlys nytt baater; do
+for e in avganger vaer tidevann nordlys nytt baater baatlogg; do
   echo "== $e"; curl -s "localhost:8787/api/$e" | head -c 300; echo
 done
 ```
 
-Forventet: alle gir 200 med JSON. `/api/baater` gir `{"konfigurert": false}`
-uten BarentsWatch-hemmelighetene — det er riktig oppførsel, ikke en feil.
+Forventet: alle gir 200 med JSON. `/api/baater` og `/api/baatlogg` gir
+`{"konfigurert": false}` uten AIS-hemmelighetene (og `BAATLOGG`) — det er
+riktig oppførsel, ikke en feil.
 
 ## Ikke gjør dette
 
@@ -212,3 +225,6 @@ Kvalfjord, Storekorsnes.
 - [README.md](README.md) — oversikt og oppsett
 - [INSTRUCTIONS.md](INSTRUCTIONS.md) — driftshåndbok, domene, hemmeligheter, feilsøking
 - [INNHOLD.md](INNHOLD.md) — redigeringsveiledning for folk i bygda
+- [docs/KART.md](docs/KART.md) — kartløsning, fliser og lag
+- [docs/BARENTSWATCH.md](docs/BARENTSWATCH.md) — BarentsWatch-API, klienttyper, lisens
+- [ROADMAP.md](ROADMAP.md) — planlagte endringer og prioriteringer
