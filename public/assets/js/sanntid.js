@@ -278,28 +278,88 @@
   var KART = { vest: 22.55, øst: 23.45, sør: 70.17, nord: 70.52, b: 700, h: 810 };
   var SVGNS = "http://www.w3.org/2000/svg";
 
-  function tegnBaatkart(baater) {
+  /* Grupperer AIS-skipstypen (kode 0–99) i fire former, som på et sjøkart. */
+  function skipstype(type) {
+    if (type >= 60 && type <= 69) return { navn: "Passasjer", form: "rombe" };
+    if (type >= 40 && type <= 49) return { navn: "Hurtigbåt", form: "rombe" };
+    if (type === 30) return { navn: "Fiskebåt", form: "trekant" };
+    if (type >= 70 && type <= 79) return { navn: "Lasteskip", form: "firkant" };
+    if (type >= 80 && type <= 89) return { navn: "Tanker", form: "firkant" };
+    return { navn: "Fartøy", form: "sirkel" };
+  }
+
+  function fartoyFarge(form) {
+    if (form === "trekant") return "#f2b441"; // fiskebåt — sol
+    if (form === "rombe") return "#d6006e";   // passasjer/hurtigbåt — magenta
+    if (form === "firkant") return "#17475c"; // last/tank — havblå
+    return "#3fbf8f";                         // slepebåt/redning/annet — nordlysgrønn
+  }
+
+  function tegnBaatkart(baater, spor) {
     var lag = document.querySelector("[data-baatkart]");
     if (!lag) return;
     while (lag.firstChild) lag.removeChild(lag.firstChild);
+
+    // Slepespor tegnes først, under merkene.
+    (spor || []).forEach(function (s) {
+      var punkter = s.spor.map(function (p) {
+        var x = (p.l - KART.vest) / (KART.øst - KART.vest) * KART.b;
+        var y = (KART.nord - p.b) / (KART.nord - KART.sør) * KART.h;
+        return x.toFixed(1) + "," + y.toFixed(1);
+      });
+      if (punkter.length < 2) return;
+      var sti = document.createElementNS(SVGNS, "polyline");
+      sti.setAttribute("points", punkter.join(" "));
+      sti.setAttribute("fill", "none");
+      sti.setAttribute("stroke", "#8ba7b4");
+      sti.setAttribute("stroke-width", "1.6");
+      sti.setAttribute("stroke-opacity", "0.75");
+      lag.appendChild(sti);
+    });
+
     baater.forEach(function (b) {
       var x = (b.lengde - KART.vest) / (KART.øst - KART.vest) * KART.b;
       var y = (KART.nord - b.bredde) / (KART.nord - KART.sør) * KART.h;
       if (x < 0 || x > KART.b || y < 0 || y > KART.h) return;
-      var prikk = document.createElementNS(SVGNS, "circle");
-      prikk.setAttribute("cx", x.toFixed(1));
-      prikk.setAttribute("cy", y.toFixed(1));
-      prikk.setAttribute("r", 5);
-      prikk.setAttribute("fill", "#d6006e");
+      var t = skipstype(b.type);
+      var farge = fartoyFarge(t.form);
+      var iRo = typeof b.fart === "number" && b.fart < 0.5;
+
+      var form = document.createElementNS(SVGNS, "path");
+      var d;
+      if (t.form === "trekant") {
+        d = "M" + x.toFixed(1) + " " + (y - 6).toFixed(1) +
+          " L" + (x + 5.5).toFixed(1) + " " + (y + 5).toFixed(1) +
+          " L" + (x - 5.5).toFixed(1) + " " + (y + 5).toFixed(1) + " Z";
+      } else if (t.form === "rombe") {
+        d = "M" + x.toFixed(1) + " " + (y - 6).toFixed(1) +
+          " L" + (x + 5.5).toFixed(1) + " " + y.toFixed(1) +
+          " L" + x.toFixed(1) + " " + (y + 6).toFixed(1) +
+          " L" + (x - 5.5).toFixed(1) + " " + y.toFixed(1) + " Z";
+      } else if (t.form === "firkant") {
+        d = "M" + (x - 5).toFixed(1) + " " + (y - 5).toFixed(1) +
+          " L" + (x + 5).toFixed(1) + " " + (y - 5).toFixed(1) +
+          " L" + (x + 5).toFixed(1) + " " + (y + 5).toFixed(1) +
+          " L" + (x - 5).toFixed(1) + " " + (y + 5).toFixed(1) + " Z";
+      } else {
+        d = "M" + (x - 5).toFixed(1) + " " + y.toFixed(1) +
+          " a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0";
+      }
+      form.setAttribute("d", d);
+      form.setAttribute("fill", iRo ? "none" : farge);
+      form.setAttribute("stroke", farge);
+      form.setAttribute("stroke-width", iRo ? "2" : "1");
       var tittel = document.createElementNS(SVGNS, "title");
-      tittel.textContent = b.navn +
-        (typeof b.fart === "number" ? " · " + Math.round(b.fart) + " knop" : "");
-      prikk.appendChild(tittel);
-      lag.appendChild(prikk);
+      tittel.textContent = b.navn + " · " + t.navn +
+        (typeof b.fart === "number" ? " · " + Math.round(b.fart) + " knop" : "") +
+        (iRo ? " · ligger i ro" : "");
+      form.appendChild(tittel);
+      lag.appendChild(form);
+
       var navn = document.createElementNS(SVGNS, "text");
       navn.setAttribute("x", (x + 8).toFixed(1));
-      navn.setAttribute("y", (y - 6).toFixed(1));
-      navn.setAttribute("fill", "#d6006e");
+      navn.setAttribute("y", (y - 7).toFixed(1));
+      navn.setAttribute("fill", farge);
       navn.setAttribute("font-family", "IBM Plex Mono, monospace");
       navn.setAttribute("font-size", "12");
       navn.textContent = b.navn;
@@ -316,7 +376,7 @@
       vert.appendChild(p);
       return;
     }
-    tegnBaatkart(data.baater);
+    tegnBaatkart(data.baater, data.spor);
     if (!data.baater.length) {
       vert.appendChild(el("p", "dempet",
         "Ingen fartøy med AIS-sender i sundet akkurat nå."));
@@ -324,9 +384,10 @@
     }
     var ul = el("ul", "sanntidsliste");
     data.baater.slice(0, 8).forEach(function (b) {
-      var tekst = typeof b.fart === "number" ?
-        Math.round(b.fart) + " knop" : "";
-      if (b.destinasjon) tekst += (tekst ? " · mot " : "Mot ") + b.destinasjon;
+      var t = skipstype(b.type);
+      var tekst = t.navn;
+      if (typeof b.fart === "number") tekst += " · " + Math.round(b.fart) + " knop";
+      if (b.destinasjon) tekst += " · mot " + b.destinasjon;
       rad(ul, b.navn, tekst || "ligger i ro");
     });
     vert.appendChild(ul);
@@ -386,7 +447,7 @@
     fetch("/api/baater")
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (data) {
-        if (data && data.baater) tegnBaatkart(data.baater);
+        if (data && data.baater) tegnBaatkart(data.baater, data.spor);
       })
       .catch(function () {});
   }
