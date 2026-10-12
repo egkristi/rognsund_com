@@ -29,13 +29,23 @@ Viser fartøy i sundet:
 Cloudflare-hemmeligheter: `BW_AIS_CLIENT_ID`, `BW_AIS_CLIENT_SECRET`.
 Autentisering: OAuth2 client credentials mot `https://id.barentswatch.no/connect/token` med `scope=ais`.
 
-### Mulige utvidelser (AIS)
+### Implementert i koden
 
-- **Ikoner per fartøystype**: AIS-dataene inneholder skipstype (kode 0–99,
-  dokumentert i aisshiptype). Kan mappes til ulike ikoner i kart og tabell.
-- **Slepespor (historikk)**: historiske posisjoner finnes via Historic AIS API
+- **Ikoner per fartøystype** — `/api/baater` tar med skipstype (`shipType`,
+  AIS-kode 0–99). I kartet tegnes fire former: fiskebåt (trekant, gul),
+  passasjer/hurtigbåt (rombe, magenta), lasteskip/tanker (firkant, havblå) og
+  annet (sirkel, grønn). Fartøy som ligger i ro (fart < 0,5 knop) tegnes som
+  kontur i stedet for fylt. Skipstypen vises også som tekst i tabellen.
+- **60 minutters slepespor** — `/api/baater` henter i tillegg siste times spor
+  per fartøy fra den historiske AIS-databasen
   (`https://historic.ais.barentswatch.no/v1/historic/trackslast24hours/{mmsi}`),
-  eller ved å logge posisjoner selv (cron + KV).
+  og `sanntid.js` tegner sporet som en linje på kartet.
+
+### Ikke tilgjengelig
+
+- **AtoN** (bøyer, merker, fyr) leveres ikke av `combined`-endepunktet, som kun
+  inneholder fartøy. Faste sjømerker og fyrlykter er i stedet tegnet inn statisk
+  i kartet (hentet fra Kystverkets WFS).
 
 ## BarentsWatch API (scope `api`) — mulige bruksområder
 
