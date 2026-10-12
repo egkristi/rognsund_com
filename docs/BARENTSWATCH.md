@@ -3,6 +3,11 @@
 Dokumentasjon av hvilke BarentsWatch-API-er som brukes (eller kan brukes) på
 rognsund.com, og hvordan tilgangen er satt opp.
 
+## Navnekonvensjon
+
+Alle BarentsWatch-hemmeligheter legges i Cloudflare som **`BW_CLIENT_ID`** og
+**`BW_CLIENT_SECRET`** — uavhengig av hvilken BarentsWatch-klient som er i bruk.
+
 ## To klienttyper
 
 BarentsWatch har to separate API-klienter med ulik scope. Du trenger én klient
@@ -14,6 +19,12 @@ per type, begge opprettes under [barentswatch.no/minside](https://www.barentswat
 | **AIS API** | `ais` | Sanntids fartøyposisjoner (Kystverket) |
 | **BarentsWatch API** | `api` | Fiskehelse, AkvaInfo, FiskInfo, bølgevarsel, polare lavtrykk m.m. |
 
+Merk: én klient kan ikke ha begge scopes — trenger du begge, må du ha to
+klienter. `BW_CLIENT_ID`/`BW_CLIENT_SECRET` peker på den klienten som er i bruk
+(i dag: AIS-klienten). Skal vi senere ta i bruk «BarentsWatch API» (scope
+`api`), må vi opprette en andre klient og legge den under et eget navnepar
+(f.eks. `BW_API_CLIENT_ID`/`BW_API_CLIENT_SECRET`).
+
 ## AIS API — i bruk
 
 Viser fartøy i sundet:
@@ -21,7 +32,7 @@ Viser fartøy i sundet:
 - `GET /api/baater` — fartøy i sundet nå (`https://live.ais.barentswatch.no/v1/latest/combined`)
 - `GET /api/baatlogg` — fartøy innom siste uka (cron hvert 10. min + KV-navnerommet `BAATLOGG`)
 
-Cloudflare-hemmeligheter: `BW_AIS_CLIENT_ID`, `BW_AIS_CLIENT_SECRET`.
+Cloudflare-hemmeligheter: `BW_CLIENT_ID`, `BW_CLIENT_SECRET`.
 Autentisering: OAuth2 client credentials mot `https://id.barentswatch.no/connect/token` med `scope=ais`.
 
 ## BarentsWatch API (scope `api`) — mulige bruksområder
