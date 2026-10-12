@@ -74,7 +74,8 @@ export default {
      BarentsWatch-hemmelighetene og KV-navnerommet BAATLOGG. */
   async scheduled(event, env, ctx) {
     if (!env.BAATLOGG || !env.BW_AIS_CLIENT_ID || !env.BW_AIS_CLIENT_SECRET) return;
-    const baater = await hentAisPosisjoner(env);
+    const token = await hentBwToken(env);
+    const baater = await hentAisPosisjoner(env, token);
     if (!baater.length) return;
 
     const nå = new Date().toISOString();
@@ -172,7 +173,7 @@ async function sendEpost(env, m) {
   const respons = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${env.RESEND_API_KEY}`,
+      Authorization: `Bearer ***}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -518,20 +519,8 @@ async function hentNytt() {
 // Samme utsnitt som kartet på praktisk-sida.
 const SUNDET = { sør: 70.17, nord: 70.52, vest: 22.55, øst: 23.45 };
 
-async function hentBaater(env) {
-  if (!env.BW_AIS_CLIENT_ID || !env.BW_AIS_CLIENT_SECRET) {
-    return { konfigurert: false, baater: [] };
-  }
-  return {
-    konfigurert: true,
-    hentet: new Date().toISOString(),
-    baater: await hentAisPosisjoner(env),
-    kilde: "Kystverket via BarentsWatch",
-  };
-}
-
-async function hentAisPosisjoner(env) {
-  const token = await hentJson("https://id.barentswatch.no/connect/token", {
+async function hentBwToken(env) {
+  return hentJson("https://id.barentswatch.no/connect/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
@@ -541,7 +530,9 @@ async function hentAisPosisjoner(env) {
       grant_type: "client_credentials",
     }),
   });
+}
 
+async function hentAisPosisjoner(env, token) {
   const alle = await hentJson("https://live.ais.barentswatch.no/v1/latest/combined", {
     headers: { Authorization: `Bearer ${token.access_token}` },
   });
@@ -554,6 +545,7 @@ async function hentAisPosisjoner(env) {
     .map((b) => ({
       navn: b.name || "Ukjent fartøy",
       mmsi: b.mmsi,
+      type: b.shipType,
       fart: b.speedOverGround,
       kurs: b.courseOverGround,
       destinasjon: b.destination || null,
@@ -561,6 +553,44 @@ async function hentAisPosisjoner(env) {
       lengde: b.longitude,
       tid: b.msgtime,
     }));
+}
+
+/* Siste 60 minutters spor for fartøyene i sundet, hentet fra den historiske
+   AIS-databasen. Én spørring per fartøy; enkeltfartøy som feiler hoppes over. */
+async function hentSpor(env, token, baater) {
+  const grense = Date.now() - 60 * 60 * 1000;
+  const svar = await Promise.allSettled(
+    baater.slice(0, 12).map(async (b) => {
+      const track = await hentJson(
+        `https://historic.ais.barentswatch.no/v1/historic/trackslast24hours/${b.mmsi}`,
+        { headers: { Authorization: `Bearer ${token.access_token}` } }
+      );
+      const punkter = (Array.isArray(track) ? track : [])
+        .filter((p) => typeof p.latitude === "number" &&
+          new Date(p.msgtime).getTime() >= grense)
+        .map((p) => ({ b: p.latitude, l: p.longitude, t: p.msgtime }));
+      return { mmsi: b.mmsi, navn: b.navn, spor: punkter };
+    })
+  );
+  return svar
+    .filter((r) => r.status === "fulfilled" && r.value.spor.length >= 2)
+    .map((r) => r.value);
+}
+
+async function hentBaater(env) {
+  if (!env.BW_AIS_CLIENT_ID || !env.BW_AIS_CLIENT_SECRET) {
+    return { konfigurert: false, baater: [], spor: [] };
+  }
+  const token = await hentBwToken(env);
+  const baater = await hentAisPosisjoner(env, token);
+  const spor = await hentSpor(env, token, baater);
+  return {
+    konfigurert: true,
+    hentet: new Date().toISOString(),
+    baater,
+    spor,
+    kilde: "Kystverket via BarentsWatch",
+  };
 }
 
 /* --- Båtloggen: hvem har vært innom sundet den siste uka ----------------
