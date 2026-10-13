@@ -19,9 +19,14 @@ til `.no` — det er ikke en feil. Merk likevel at e-postadressa til nettstedet 
 ```bash
 npm install        # henter wrangler, ingenting annet
 npm run dev        # workerd lokalt på http://localhost:8787
-npm run deploy     # publiserer til Cloudflare
+npm run deploy     # manuell publisering til Cloudflare
 npm run tail       # logger fra produksjon
 ```
+
+**Publisering skjer automatisk.** Cloudflare er koblet til Git-repoet og
+autodeployer `main`-grenen. Så snart en endring er committet og pushet til
+`main`, bygger og publiserer Cloudflare den — ingen `npm run deploy` nødvendig.
+`npm run deploy` er bare en manuell nødutgang og skal normalt ikke brukes.
 
 Det finnes **ingen byggeprosess, ingen bundler og ingen tester**. Filene i
 `public/` serveres nøyaktig som de ligger. Ikke innfør et byggesteg uten at det

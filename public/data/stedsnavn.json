@@ -1,0 +1,46 @@
+{
+  "type": "FeatureCollection",
+  "kilder": "Stedsnavn fra Kartverkets Sentrale stedsnavnregister (SSR), hentet 2026-10-12. Lisens: NLOD.",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [23.20216, 70.21419] },
+      "properties": { "navn": "Storekorsnes", "type": "Bygdelag" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [23.04199, 70.32739] },
+      "properties": { "navn": "Altneset", "type": "Nes i sjø" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [23.1225, 70.27852] },
+      "properties": { "navn": "Hakkstabben", "type": "Bygdelag" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [22.86834, 70.31804] },
+      "properties": { "navn": "Kvalfjord", "type": "Bygdelag" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [22.80058, 70.34316] },
+      "properties": { "navn": "Pollen", "type": "Vik i sjø" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [22.89116, 70.31743] },
+      "properties": { "navn": "Bia", "type": "Nes i sjø" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [22.86934, 70.34041] },
+      "properties": { "navn": "Nordmannsnes", "type": "Nes i sjø" }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [23.04402, 70.32686] },
+      "properties": { "navn": "Rognsund kirke", "type": "Kirke" }
+    }
+  ]
+}

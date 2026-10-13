@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kart — Rognsund</title>
+<meta name="description" content="Kart over Rognsundet: sjøkart og terreng fra Kartverket, stedsnavn og båter i sanntid — lag på lag.">
+<link rel="canonical" href="https://rognsund.com/kart">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/img/ikon-180.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#0b1d2a">
+<meta property="og:type" content="article">
+<meta property="og:locale" content="nb_NO">
+<meta property="og:site_name" content="Rognsund">
+<meta property="og:title" content="Kart over Rognsundet">
+<meta property="og:description" content="Sjøkart og terreng fra Kartverket, stedsnavn og båter i sanntid — lag på lag.">
+<meta property="og:url" content="https://rognsund.com/kart">
+<meta property="og:image" content="https://rognsund.com/assets/img/delingsbilde.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preload" href="/assets/fonts/schibsted-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/literata-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/css/rognsund.css">
+<link rel="stylesheet" href="/assets/css/ol.css">
+<script src="/assets/js/ol.js" defer></script>
+<script src="/assets/js/nettsted.js" defer></script>
+<script src="/assets/js/kart.js" defer></script>
+</head>
+<body>
+<a class="hopp-til-innhold" href="#innhold">Hopp til innholdet</a>
+
+<header class="topp">
+  <div class="omslag topp-rad">
+    <a class="merke" href="/">
+      <svg class="merke-ikon" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <defs><clipPath id="rm"><circle cx="16" cy="16" r="14.4"/></clipPath></defs>
+        <g clip-path="url(#rm)">
+          <path d="M22.8 -6.7 L-3.2 33.3 L-6 33.3 L-6 -6.7 Z" fill="currentColor" opacity="0.92"/>
+          <path d="M31.2 -1.3 L5.2 38.7 L38 38.7 L38 -1.3 Z" fill="currentColor" opacity="0.92"/>
+          <line x1="27" y1="-4" x2="1" y2="36" stroke="#d6006e" stroke-width="1.7"/>
+        </g>
+        <circle cx="16" cy="16" r="14.4" stroke="currentColor" stroke-width="1.5" opacity="0.85"/>
+      </svg>
+      <span class="merke-navn">Rognsund</span>
+      <span class="merke-pos">70°23′N&nbsp;23°04′E</span>
+    </a>
+    <button class="meny-knapp" aria-expanded="false" aria-controls="hovedmeny">Meny</button>
+    <nav class="meny" id="hovedmeny" aria-label="Hovedmeny">
+      <a href="/om-bygda">Om bygda</a>
+      <a href="/historie">Historie</a>
+      <a href="/natur">Natur</a>
+      <a href="/praktisk">Praktisk</a>
+      <a href="/kart" aria-current="page">Kart</a>
+      <a href="/det-som-skjer">Det som skjer</a>
+      <a href="/kontakt">Kontakt</a>
+    </nav>
+  </div>
+</header>
+
+<main id="innhold">
+
+  <section class="bolk bolk--tett">
+    <div class="omslag">
+      <div class="bolk-topp">
+        <span class="merkelapp">Kart</span>
+        <h1>Sundet, lag for lag</h1>
+        <p>
+          Velg grunnkart og skru av og på lagene over kartet. Sjøkart og
+          terreng kommer fra Kartverket, stedsnavn fra Kartverkets
+          stedsnavnregister, og båtene vises der de er akkurat nå.
+        </p>
+      </div>
+
+      <div id="kart-verktoy" class="kart-kontroll">
+        <noscript>
+          <p>
+            Kartet tegnes med JavaScript. Bruk
+            <a href="https://www.norgeskart.no/" target="_blank" rel="noopener">Norgeskart</a> eller
+            <a href="https://kystinfo.no/" target="_blank" rel="noopener">Kystinfo</a>
+            for kart over sundet.
+          </p>
+        </noscript>
+      </div>
+
+      <div id="kart" class="kart-ramme"></div>
+
+      <p id="kart-status" class="dempet" aria-live="polite"></p>
+
+      <p class="kilde">
+        Sjøkart og terreng: © <a href="https://www.kartverket.no/" target="_blank" rel="noopener">Kartverket</a> (CC BY 4.0).
+        Stedsnavn: Kartverkets stedsnavnregister (NLOD).
+        Båter: AIS fra Kystverket via <a href="https://www.barentswatch.no/" target="_blank" rel="noopener">BarentsWatch</a>.
+        Kartet er ikke til navigasjon — bruk offisielle sjøkart.
+      </p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="bunn">
+  <div class="omslag">
+    <div class="bunn-rutenett">
+      <div>
+        <h3>Rognsund</h3>
+        <p>
+          Bygda i sundet mellom Seiland og Stjernøya, i Alta kommune i Finnmark.
+          Ingen vei hit — men båten går.
+        </p>
+      </div>
+      <div>
+        <h3>Sidene</h3>
+        <ul>
+          <li><a href="/om-bygda">Om bygda</a></li>
+          <li><a href="/historie">Historie</a></li>
+          <li><a href="/natur">Natur og friluftsliv</a></li>
+          <li><a href="/praktisk">Praktisk info</a></li>
+          <li><a href="/kart">Kart</a></li>
+          <li><a href="/det-som-skjer">Det som skjer</a></li>
+          <li><a href="/kontakt">Kontakt</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Nyttige lenker</h3>
+        <ul>
+          <li><a href="https://www.snelandia.no/" target="_blank" rel="noopener">Snelandia — buss og båt</a></li>
+          <li><a href="https://havspor.no/" target="_blank" rel="noopener">Havspor — følg båtene på kart</a></li>
+          <li><a href="https://seilandnasjonalpark.no/" target="_blank" rel="noopener">Seiland nasjonalpark</a></li>
+          <li><a href="https://www.alta.kommune.no/" target="_blank" rel="noopener">Alta kommune</a></li>
+          <li><a href="https://www.yr.no/" target="_blank" rel="noopener">Været på yr.no</a></li>
+          <li><a href="https://www.fefo.no/" target="_blank" rel="noopener">FeFo — fiskekort og grunn</a></li>
+        </ul>
+      </div>
+      <div>
+        <h3>Bidra</h3>
+        <p>
+          Sidene lages av folk med tilknytning til bygda. Rettelser og nytt stoff
+          er alltid velkomment.
+        </p>
+        <p>
+          <a href="https://github.com/egkristi/rognsund_com/issues" target="_blank" rel="noopener">Meld inn feil og forslag på GitHub</a>
+        </p>
+        <a class="knapp knapp--tom" href="/kontakt">Ta kontakt</a>
+      </div>
+    </div>
+    <div class="bunn-fin">
+      <span>© <span data-aar>2026</span> Rognsund</span>
+      <span>rognsund.com</span>
+      <span><a href="https://github.com/egkristi/rognsund_com" target="_blank" rel="noopener">Kildekoden på GitHub</a></span>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

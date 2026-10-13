@@ -714,6 +714,47 @@ textarea { min-height: 9rem; resize: vertical; }
   margin-top: var(--rom-3);
 }
 
+/* --- Kartside ----------------------------------------------------------- */
+.kart-ramme {
+  width: 100%;
+  height: 68vh;
+  min-height: 22rem;
+  max-height: 52rem;
+  border: 1px solid var(--kant);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--kart);
+}
+.kart-kontroll { margin-bottom: var(--rom-4); }
+.kart-kontroll-felt {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.kart-kontroll-felt legend {
+  font-family: var(--skrift-data);
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--magenta);
+  margin-bottom: var(--rom-3);
+}
+.kart-kontroll-rad {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--rom-2);
+  margin: 0 var(--rom-4) var(--rom-2) 0;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.kart-kontroll-rad input {
+  accent-color: var(--magenta);
+  width: auto;
+  margin: 0;
+}
+#kart-status { margin-top: var(--rom-3); }
+.ol-attribution { font-size: 0.65rem; }
+
 /* --- Bunn --------------------------------------------------------------- */
 .bunn {
   background: var(--dyp);
