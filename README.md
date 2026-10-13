@@ -91,15 +91,14 @@ Wrangler oppretter DNS-oppføringene selv. `www.rognsund.com` sendes videre til
 > Gjør du steg 3 før sonen er aktiv i Cloudflare, feiler `deploy` med at ruten
 > ikke finnes. Da er det bare å vente på navneserverne og prøve igjen.
 
-## Publisering fra GitHub
+## Publisering
 
-`.github/workflows/deploy.yml` publiserer ved push til `main`. Legg inn to
-hemmeligheter i repoet (Settings → Secrets and variables → Actions):
+Publisering skjer **automatisk**. Cloudflare er koblet til Git-repoet og
+bygger og publiserer `main`-grenen hver gang en endring committes og pushes
+hit. Arbeidsflyten er altså: rediger, commit, push — publisert etter et par
+minutter.
 
-| Hemmelighet | Hvor du finner den |
-| --- | --- |
-| `CLOUDFLARE_API_TOKEN` | Cloudflare → My Profile → API Tokens, mal «Edit Cloudflare Workers» |
-| `CLOUDFLARE_ACCOUNT_ID` | Vises i URL-en i Cloudflare-dashbordet |
+`npm run deploy` finnes som manuell nødutgang, men skal normalt ikke brukes.
 
 ## Kontaktskjemaet
 

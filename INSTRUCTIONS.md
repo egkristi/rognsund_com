@@ -211,23 +211,14 @@ lag når tjenesten svarer igjen.
 
 ---
 
-## 6. Automatisk publisering fra GitHub
+## 6. Automatisk publisering
 
-`.github/workflows/deploy.yml` publiserer ved hver push til `main`.
+Cloudflare er koblet til Git-repoet og autodeployer `main`-grenen. Hver gang
+en endring committes og pushes til `main`, bygger og publiserer Cloudflare den
+— ingen `npm run deploy` nødvendig.
 
-Legg inn to hemmeligheter under *Settings → Secrets and variables → Actions*:
-
-| Navn | Hvor |
-| --- | --- |
-| `CLOUDFLARE_API_TOKEN` | Cloudflare → My Profile → API Tokens → *Create Token* → malen «Edit Cloudflare Workers» |
-| `CLOUDFLARE_ACCOUNT_ID` | Står i adresselinja i Cloudflare-dashbordet |
-
-Skal tokenet også kunne sette opp egendefinerte domener, må det ha
-`Zone → Workers Routes → Edit` og `Zone → Zone → Read` for `rognsund.com` i
-tillegg til `Account → Workers Scripts → Edit`.
-
-Etter dette er arbeidsflyten: rediger, commit, push. Publisert etter et par
-minutter.
+Arbeidsflyten er: rediger, commit, push. Publisert etter et par minutter.
+`npm run deploy` finnes som manuell nødutgang, men skal normalt ikke brukes.
 
 ---
 
