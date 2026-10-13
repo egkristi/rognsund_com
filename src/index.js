@@ -168,12 +168,12 @@ async function håndterKontakt(request, env, ctx) {
 }
 
 async function sendEpost(env, m) {
-  const fra = env.KONTAKT_FRA || "Rognsund <post@rognsund.com>";
+  const fra = env.KONTAKT_FRA || "Rognsund <post@rognsund.no>";
   const svarTil = m.epost;
   const respons = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ***}`,
+      Authorization: `Bearer ${env.RESEND_API_KEY}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -234,7 +234,7 @@ const LENGDE = 23.07;
 
 // Identifikasjon Entur og MET krever av alle som bruker API-ene deres.
 const KLIENTNAVN = "rognsundcom-nettsted";
-const BRUKERAGENT = "rognsund.com post@rognsund.com";
+const BRUKERAGENT = "rognsund.com post@rognsund.no";
 
 // Kaiene i og rundt sundet, fra Enturs nasjonale stoppestedsregister.
 const KAIER = [

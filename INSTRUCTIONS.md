@@ -106,7 +106,7 @@ workeren innsendingen og logger den — den forsvinner altså når du ikke ser p
 
 ```bash
 npx wrangler secret put RESEND_API_KEY
-npx wrangler secret put KONTAKT_TIL       # f.eks. post@rognsund.com
+npx wrangler secret put KONTAKT_TIL       # f.eks. post@rognsund.no
 ```
 
 Avsenderadressen står som `KONTAKT_FRA` i `wrangler.jsonc`. Domenet i den
@@ -308,7 +308,7 @@ forrige versjonen på nytt.
 ## 11. Ikke satt opp ennå
 
 - Ekte innhold på plassene merket `<!-- FYLL INN: … -->` i HTML-filene
-- Riktig e-postadresse på kontaktsida (står nå som `post@rognsund.com`)
+- Riktig e-postadresse på kontaktsida (står nå som `post@rognsund.no`)
 - Bilder fra bygda — nettstedet har foreløpig bare tegnet grafikk
 - Levering av skjemainnsendinger (punkt 5)
 - Domenet koblet på (punkt 4)

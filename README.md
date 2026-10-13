@@ -111,7 +111,7 @@ workeren innsendingen og logger den — den forsvinner altså når du ikke ser p
 
 ```bash
 npx wrangler secret put RESEND_API_KEY
-npx wrangler secret put KONTAKT_TIL       # f.eks. post@rognsund.com
+npx wrangler secret put KONTAKT_TIL       # f.eks. post@rognsund.no
 ```
 
 Avsenderadressen står som `KONTAKT_FRA` i `wrangler.jsonc`. Domenet i den
@@ -287,7 +287,7 @@ folk i bygda rette og fylle på:
 - [ ] Faste årlige begivenheter (`det-som-skjer.html`)
 - [ ] Bilder fra bygda. Legg dem i `assets/img/` og lenk dem inn
 - [ ] Gå gjennom historiesida med noen som kan lokalhistorien
-- [ ] Sett riktig e-postadresse på kontaktsida (nå: `post@rognsund.com`)
+- [ ] Sett riktig e-postadresse på kontaktsida (nå: `post@rognsund.no`)
 - [ ] Samiske stedsnavn — `Seiland/Sievju` er med, resten bør sjekkes med noen som kan språket
 
 ---
